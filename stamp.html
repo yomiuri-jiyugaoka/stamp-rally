@@ -65,6 +65,14 @@
   .achievement-text { font-size: 18px; font-weight: bold; color: white; }
   .achievement-sub { font-size: 13px; color: rgba(255,255,255,0.9); }
 
+  /* 済みスタンプ画面 */
+  .already-screen { display: none; }
+  .already-icon { font-size: 80px; margin-bottom: 16px; filter: grayscale(1); opacity: 0.5; }
+  .already-badge { display: inline-block; background: #CCC; color: white; border-radius: 50px; padding: 8px 24px; font-size: 18px; font-weight: bold; margin: 8px 0 16px; }
+  .already-text { font-size: 20px; font-weight: bold; color: #999; margin-bottom: 8px; }
+  .already-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+  .card.already { background: #F5F5F5; border: 2px solid #DDD; }
+
   /* 紙吹雪 */
   .confetti-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 100; overflow: hidden; }
   .confetti-piece { position: absolute; width: 10px; height: 10px; top: -10px; }
@@ -94,6 +102,16 @@
       <div class="loading" id="stampLoading">⏳ 確認中...</div>
       <input type="text" id="nicknameInput" placeholder="例：たろう">
       <button class="btn btn-accent" onclick="stampWithInput()">🌟 スタンプを押す！</button>
+    </div>
+
+    <!-- 済み画面 -->
+    <div class="already-screen" id="alreadyScreen">
+      <div class="already-icon">🎯</div>
+      <div class="already-text">このスタンプはすでに押してあるよ！</div>
+      <div class="already-badge">✅ 済み</div>
+      <div class="already-sub" id="alreadyCourseName"></div>
+      <button class="btn btn-gray" onclick="resetScreen()">🔄 やり直す</button>
+      <button class="btn btn-primary" onclick="goMypage()">📱 マイページを見る</button>
     </div>
 
     <div class="success-screen" id="successScreen">
@@ -275,10 +293,11 @@
 
     if (dupStamps && dupStamps.length > 0) {
       loading.style.display = 'none';
-      errorDiv.style.display = 'block';
-      errorDiv.textContent = 'この講座のスタンプはもう押されています！';
       document.getElementById('confirmSection').style.display = 'none';
-      document.getElementById('inputSection').style.display = 'block';
+      document.getElementById('inputSection').style.display = 'none';
+      document.getElementById('alreadyCourseName').textContent = document.getElementById('courseName').textContent;
+      document.getElementById('alreadyScreen').style.display = 'block';
+      document.getElementById('mainCard').classList.add('already');
       return;
     }
 
@@ -328,6 +347,19 @@
   }
 
   function goMypage() { location.href = `mypage.html?id=${currentParticipantId}`; }
+
+  function resetScreen() {
+    document.getElementById('alreadyScreen').style.display = 'none';
+    document.getElementById('mainCard').classList.remove('already');
+    const savedNickname = localStorage.getItem('stamp_nickname');
+    if (savedNickname) {
+      document.getElementById('confirmSection').style.display = 'block';
+      document.getElementById('inputSection').style.display = 'none';
+    } else {
+      document.getElementById('confirmSection').style.display = 'none';
+      document.getElementById('inputSection').style.display = 'block';
+    }
+  }
   init();
 </script>
 </body>
