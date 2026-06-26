@@ -4,280 +4,106 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>管理者画面 - スタンプラリー</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
-
-  :root {
-    --primary: #FF6B35;
-    --accent: #4ECDC4;
-    --bg: #F5F7FA;
-    --card: #FFFFFF;
-    --text: #2D2D2D;
-    --muted: #888;
-  }
-
+  :root { --primary: #FF6B35; --accent: #4ECDC4; --bg: #F5F7FA; --card: #FFFFFF; --text: #2D2D2D; --muted: #888; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Kosugi Maru', sans-serif;
-    background: var(--bg);
-    min-height: 100vh;
-    padding: 16px;
-  }
-
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-
-  .header-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--primary);
-  }
-
-  .back-btn {
-    background: white;
-    border: none;
-    border-radius: 10px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-family: 'Kosugi Maru', sans-serif;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-
-  .card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    margin-bottom: 16px;
-  }
-
-  .section-title {
-    font-size: 15px;
-    font-weight: bold;
-    color: var(--text);
-    margin-bottom: 14px;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 0;
-  }
-
-  .stat-box {
-    background: var(--bg);
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-  }
-
-  .stat-num {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--primary);
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .btn {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: 'Kosugi Maru', sans-serif;
-    cursor: pointer;
-    transition: transform 0.1s;
-    margin-right: 8px;
-    margin-bottom: 8px;
-  }
-
+  body { font-family: 'Kosugi Maru', sans-serif; background: var(--bg); min-height: 100vh; padding: 16px; }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .header-title { font-size: 18px; font-weight: bold; color: var(--primary); }
+  .back-btn { background: white; border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-family: 'Kosugi Maru', sans-serif; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card { background: var(--card); border-radius: 16px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 14px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat-box { background: var(--bg); border-radius: 12px; padding: 12px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: bold; color: var(--primary); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .btn { padding: 10px 16px; border: none; border-radius: 10px; font-size: 14px; font-family: 'Kosugi Maru', sans-serif; cursor: pointer; transition: transform 0.1s; margin-right: 8px; margin-bottom: 8px; }
   .btn:active { transform: scale(0.97); }
-
   .btn-primary { background: var(--primary); color: white; }
   .btn-accent { background: var(--accent); color: white; }
+  .btn-green { background: #48BB78; color: white; }
   .btn-gray { background: #EEE; color: var(--text); }
-
-  /* テーブル */
-  .table-wrap {
-    overflow-x: auto;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  th {
-    background: var(--bg);
-    padding: 10px 8px;
-    text-align: left;
-    color: var(--muted);
-    font-weight: normal;
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 10px 8px;
-    border-bottom: 1px solid #F0F0F0;
-    color: var(--text);
-  }
-
-  .stamp-badge {
-    display: inline-block;
-    background: var(--primary);
-    color: white;
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: 12px;
-    font-weight: bold;
-  }
-
-  .prize-badge {
-    display: inline-block;
-    border-radius: 20px;
-    padding: 2px 8px;
-    font-size: 11px;
-    margin-left: 4px;
-  }
-
+  .btn-full { width: 100%; padding: 12px; }
+  input, select, textarea { width: 100%; padding: 10px 12px; border: 2px solid #EEE; border-radius: 10px; font-size: 14px; font-family: 'Kosugi Maru', sans-serif; color: var(--text); outline: none; margin-bottom: 10px; }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg); padding: 10px 8px; text-align: left; color: var(--muted); white-space: nowrap; }
+  td { padding: 10px 8px; border-bottom: 1px solid #F0F0F0; color: var(--text); }
+  .stamp-badge { display: inline-block; background: var(--primary); color: white; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: bold; }
+  .prize-badge { display: inline-block; border-radius: 20px; padding: 2px 8px; font-size: 11px; margin-left: 4px; }
   .prize-3 { background: #FFF3CD; color: #856404; }
   .prize-5 { background: #D1ECF1; color: #0C5460; }
-
-  /* フォーム */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  input, select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid #EEE;
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: 'Kosugi Maru', sans-serif;
-    color: var(--text);
-    outline: none;
-  }
-
-  input:focus, select:focus { border-color: var(--primary); }
-
-  .success-msg {
-    background: #F0FFF4;
-    border: 1px solid #9AE6B4;
-    color: #276749;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin-top: 8px;
-    display: none;
-  }
-
-  .tab-group {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    overflow-x: auto;
-  }
-
-  .tab {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-family: 'Kosugi Maru', sans-serif;
-    cursor: pointer;
-    background: #EEE;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
+  .tab-group { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
+  .tab { padding: 8px 14px; border: none; border-radius: 8px; font-size: 13px; font-family: 'Kosugi Maru', sans-serif; cursor: pointer; background: #EEE; color: var(--muted); white-space: nowrap; }
   .tab.active { background: var(--primary); color: white; }
-
   .panel { display: none; }
   .panel.active { display: block; }
-
-  /* パスワード画面 */
-  .login-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    padding: 20px;
+  .success-msg { background: #F0FFF4; border: 1px solid #9AE6B4; color: #276749; padding: 8px 12px; border-radius: 8px; font-size: 13px; margin-top: 8px; display: none; }
+  .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .login-box { background: white; border-radius: 20px; padding: 32px; width: 100%; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center; }
+  .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .modal.open { display: flex; }
+  .modal-box { background: white; border-radius: 20px; padding: 24px; width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto; }
+  .qr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .qr-item { background: white; border: 1px solid #EEE; border-radius: 12px; padding: 16px; text-align: center; }
+  .qr-item .course-name { font-size: 12px; color: var(--text); margin-top: 8px; font-weight: bold; line-height: 1.3; }
+  .qr-item .course-code { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  @media print {
+    .header, .tab-group, .card:first-of-type, .no-print { display: none !important; }
+    .panel { display: block !important; }
+    .panel:not(#panel-qr) { display: none !important; }
+    body { padding: 0; background: white; }
+    .qr-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .qr-item { break-inside: avoid; border: 1px solid #CCC; }
+    .login-overlay { display: none !important; }
   }
-
-  .login-box {
-    background: white;
-    border-radius: 20px;
-    padding: 32px;
-    width: 100%;
-    max-width: 360px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    text-align: center;
-  }
-
-  .login-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
-  .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
 </style>
 </head>
 <body>
 
-<!-- 管理者パスワード認証 -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
     <div style="font-size:40px;margin-bottom:12px">🔐</div>
-    <div class="login-title">管理者ログイン</div>
-    <div class="login-sub">管理者パスワードを入力してください</div>
+    <div style="font-size:20px;font-weight:bold;margin-bottom:8px">管理者ログイン</div>
+    <div style="font-size:13px;color:#888;margin-bottom:20px">パスワードを入力してください</div>
     <input type="password" id="adminPass" placeholder="パスワード" style="margin-bottom:12px">
-    <button class="btn btn-primary" style="width:100%" onclick="adminLogin()">ログイン</button>
+    <button class="btn btn-primary btn-full" onclick="adminLogin()">ログイン</button>
     <div style="color:red;font-size:13px;margin-top:8px;display:none" id="loginError">パスワードが違います</div>
   </div>
 </div>
 
-<div class="header">
-  <button class="back-btn" onclick="window.location.href='index.html'">← 戻る</button>
+<!-- スタンプ詳細モーダル -->
+<div class="modal" id="stampModal">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:bold;margin-bottom:16px" id="modalTitle">スタンプ詳細</div>
+    <div id="stampList"></div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-green" id="prize3Btn" onclick="togglePrize(3)">🎁 3個プレゼント交換済み</button>
+      <button class="btn btn-accent" id="prize5Btn" onclick="togglePrize(5)">🏆 5個プレゼント交換済み</button>
+    </div>
+    <button class="btn btn-gray btn-full" style="margin-top:8px" onclick="closeModal()">閉じる</button>
+  </div>
+</div>
+
+<div class="header no-print">
+  <button class="back-btn" onclick="location.href='index.html'">← 戻る</button>
   <div class="header-title">⚙️ 管理者画面</div>
   <div style="width:60px"></div>
 </div>
 
-<!-- 統計 -->
-<div class="card">
+<div class="card no-print">
   <div class="section-title">📊 集計</div>
   <div class="stats-grid">
-    <div class="stat-box">
-      <div class="stat-num" id="statTotal">-</div>
-      <div class="stat-label">参加者数</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" id="statStamps">-</div>
-      <div class="stat-label">総スタンプ数</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" id="statPrize">-</div>
-      <div class="stat-label">プレゼント対象</div>
-    </div>
+    <div class="stat-box"><div class="stat-num" id="statTotal">-</div><div class="stat-label">参加者数</div></div>
+    <div class="stat-box"><div class="stat-num" id="statStamps">-</div><div class="stat-label">総スタンプ数</div></div>
+    <div class="stat-box"><div class="stat-num" id="statPrize">-</div><div class="stat-label">プレゼント対象</div></div>
   </div>
 </div>
 
-<!-- タブ -->
-<div class="tab-group">
+<div class="tab-group no-print">
   <button class="tab active" onclick="switchTab('participants')">参加者一覧</button>
   <button class="tab" onclick="switchTab('add')">参加者追加</button>
   <button class="tab" onclick="switchTab('diaries')">日記管理</button>
@@ -292,18 +118,11 @@
       <div class="section-title" style="margin-bottom:0">👥 参加者一覧</div>
       <button class="btn btn-gray" onclick="loadParticipants()">🔄 更新</button>
     </div>
-    <div class="table-wrap">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">名前をタップするとスタンプ詳細・削除・プレゼント交換ができます</p>
+    <div style="overflow-x:auto">
       <table>
-        <thead>
-          <tr>
-            <th>会員番号</th>
-            <th>氏名</th>
-            <th>スタンプ</th>
-          </tr>
-        </thead>
-        <tbody id="participantTable">
-          <tr><td colspan="3" style="text-align:center;color:#AAA;padding:20px">読み込み中...</td></tr>
-        </tbody>
+        <thead><tr><th>ニックネーム</th><th>本名</th><th>スタンプ</th></tr></thead>
+        <tbody id="participantTable"><tr><td colspan="3" style="text-align:center;color:#AAA;padding:20px">読み込み中...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -314,39 +133,11 @@
   <div class="card">
     <div class="section-title">➕ 参加者を追加</div>
     <div class="form-grid">
-      <input type="text" id="newMemberId" placeholder="会員番号" inputmode="numeric">
-      <input type="text" id="newName" placeholder="氏名">
+      <input type="text" id="newNickname" placeholder="ニックネーム">
+      <input type="text" id="newRealName" placeholder="本名（カタカナ）">
     </div>
-    <input type="tel" id="newPassword" placeholder="電話番号（パスワード）" style="margin-bottom:10px" inputmode="numeric">
-    <input type="email" id="newEmail" placeholder="メールアドレス（任意）" style="margin-bottom:12px">
-    <button class="btn btn-primary" onclick="addParticipant()">➕ 追加する</button>
+    <button class="btn btn-primary btn-full" onclick="addParticipant()">➕ 追加する</button>
     <div class="success-msg" id="addSuccess">追加しました！</div>
-  </div>
-</div>
-
-<!-- 講座管理 -->
-<div class="panel" id="panel-courses">
-  <div class="card">
-    <div class="section-title">📚 講座を追加</div>
-    <div class="form-grid">
-      <input type="text" id="newCourseCode" placeholder="講座コード（例：A01）">
-      <input type="text" id="newCourseName" placeholder="講座名">
-    </div>
-    <button class="btn btn-accent" onclick="addCourse()">➕ 追加する</button>
-    <div class="success-msg" id="courseSuccess">追加しました！</div>
-  </div>
-  <div class="card" style="margin-top:0">
-    <div class="section-title">📋 講座一覧</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>コード</th><th>講座名</th></tr>
-        </thead>
-        <tbody id="courseTable">
-          <tr><td colspan="2" style="text-align:center;color:#AAA;padding:20px">読み込み中...</td></tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 </div>
 
@@ -361,30 +152,52 @@
   </div>
 </div>
 
+<!-- 講座QR印刷 -->
+<div class="panel" id="panel-qr">
+  <div class="card no-print">
+    <div class="section-title">🖨️ 講座QRコード一覧</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">各講座のQRコードを印刷して教室に貼ってください</p>
+    <button class="btn btn-green" onclick="window.print()">🖨️ 印刷する</button>
+    <button class="btn btn-gray" onclick="loadQRCodes()">🔄 再読み込み</button>
+  </div>
+  <div class="qr-grid" id="qrGrid">
+    <div style="text-align:center;color:#AAA;padding:20px;grid-column:1/-1">読み込み中...</div>
+  </div>
+</div>
+
 <!-- CSV出力 -->
 <div class="panel" id="panel-export">
   <div class="card">
     <div class="section-title">📥 データをダウンロード</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Excelで開けるCSV形式でダウンロードできます</p>
-    <button class="btn btn-primary" onclick="exportParticipants()">👥 参加者一覧をダウンロード</button>
-    <button class="btn btn-accent" onclick="exportStamps()">🌟 スタンプ履歴をダウンロード</button>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Excelで開けるCSV形式</p>
+    <button class="btn btn-primary" onclick="exportParticipants()">👥 参加者一覧</button>
+    <button class="btn btn-accent" onclick="exportStamps()">🌟 スタンプ履歴</button>
   </div>
 </div>
 
 <script>
   const SUPABASE_URL = 'https://xxtqlxfknmbbfjdidjjl.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4dHFseGZrbm1iYmZqZGlkampsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzM5MjIsImV4cCI6MjA5NjMwOTkyMn0.gtvl8xfz6a6axkn7OYsmZVGubIiVY5QRCWBiNY2oUwU';
-  const ADMIN_PASSWORD = 'admin1234'; // ← 管理者パスワードをここで変更
+  const ADMIN_PASSWORD = 'admin1234';
+  const BASE_URL = 'https://yomiuri-jiyugaoka.github.io/stamp-rally';
+
+  let currentParticipantId = null;
+  let currentStamps = [];
+  let courseMap = {};
+  let allParticipants = {};
+  let allCourses = {};
 
   function adminLogin() {
-    const pass = document.getElementById('adminPass').value;
-    if (pass === ADMIN_PASSWORD) {
+    if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
       document.getElementById('loginOverlay').style.display = 'none';
-      loadAll();
+      loadParticipants();
+      loadCourseMap();
     } else {
       document.getElementById('loginError').style.display = 'block';
     }
   }
+
+  document.getElementById('adminPass').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
 
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach((t, i) => {
@@ -397,130 +210,126 @@
     if (tab === 'diaries') loadDiaries();
   }
 
-  async function loadAll() {
-    await loadParticipants();
-    await loadStats();
+  async function loadCourseMap() {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/courses?select=*',
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    const courses = await res.json();
+    courses.forEach(c => courseMap[c.course_code] = c.course_name);
   }
 
   async function loadParticipants() {
     const [pRes, sRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/participants?select=*&order=member_id.asc`,
-        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }),
-      fetch(`${SUPABASE_URL}/rest/v1/stamps?select=*`,
-        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
+      fetch(SUPABASE_URL + '/rest/v1/participants?select=*&order=id.asc',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }),
+      fetch(SUPABASE_URL + '/rest/v1/stamps?select=*',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } })
     ]);
-
     const participants = await pRes.json();
     const stamps = await sRes.json();
-
     const stampMap = {};
+    const prize3Map = {};
+    const prize5Map = {};
     stamps.forEach(s => {
-      stampMap[s.member_id] = (stampMap[s.member_id] || 0) + 1;
+      stampMap[s.participant_id] = (stampMap[s.participant_id] || 0) + 1;
+      if (s.prize_3) prize3Map[s.participant_id] = true;
+      if (s.prize_5) prize5Map[s.participant_id] = true;
     });
 
     const tbody = document.getElementById('participantTable');
-    if (participants.length === 0) {
+    if (!participants.length) {
       tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#AAA;padding:20px">参加者がいません</td></tr>';
-      return;
+    } else {
+      tbody.innerHTML = participants.map(p => {
+        const count = stampMap[p.id] || 0;
+        let badges = '<span class="stamp-badge">' + count + '個</span>';
+        if (prize3Map[p.id]) badges += '<span class="prize-badge prize-3">🎁交換済</span>';
+        if (prize5Map[p.id]) badges += '<span class="prize-badge prize-5">🏆交換済</span>';
+        return '<tr style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' +
+          '<td>' + p.nickname + '</td><td>' + p.real_name + '</td><td>' + badges + '</td></tr>';
+      }).join('');
     }
 
-    tbody.innerHTML = participants.map(p => {
-      const count = stampMap[p.member_id] || 0;
-      let prizes = '';
-      if (count >= 3) prizes += '<span class="prize-badge prize-3">3個達成</span>';
-      if (count >= 5) prizes += '<span class="prize-badge prize-5">5個達成</span>';
-      return `<tr>
-        <td>${p.member_id}</td>
-        <td>${p.name}</td>
-        <td><span class="stamp-badge">${count}個</span>${prizes}</td>
-      </tr>`;
-    }).join('');
-
-    // 統計更新
-    const prizeCount = participants.filter(p => (stampMap[p.member_id] || 0) >= 3).length;
+    const prizeCount = participants.filter(p => (stampMap[p.id] || 0) >= 3).length;
     document.getElementById('statTotal').textContent = participants.length;
     document.getElementById('statStamps').textContent = stamps.length;
     document.getElementById('statPrize').textContent = prizeCount;
   }
 
-  async function loadStats() {}
+  async function openStampModal(participantId, nickname) {
+    currentParticipantId = participantId;
+    document.getElementById('modalTitle').textContent = nickname + ' さんのスタンプ';
+    const res = await fetch(SUPABASE_URL + '/rest/v1/stamps?participant_id=eq.' + participantId + '&select=*&order=stamped_at.asc',
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    currentStamps = await res.json();
+
+    const list = document.getElementById('stampList');
+    if (!currentStamps.length) {
+      list.innerHTML = '<div style="text-align:center;color:#AAA;padding:16px">スタンプがありません</div>';
+    } else {
+      list.innerHTML = currentStamps.map((s, i) => {
+        const date = new Date(s.stamped_at).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const name = courseMap[s.course_code] || s.course_code;
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0F0F0">' +
+          '<div><div>🌟 ' + (i+1) + '個目：' + name + '</div><div style="font-size:11px;color:#888">' + date + '</div></div>' +
+          '<button class="btn btn-gray" style="padding:6px 12px;font-size:12px;margin:0;background:#FFF0F0;color:#CC3333" onclick="deleteStamp(\'' + s.id + '\')">削除</button>' +
+        '</div>';
+      }).join('');
+    }
+
+    const prize3Done = currentStamps.some(s => s.prize_3);
+    const prize5Done = currentStamps.some(s => s.prize_5);
+    document.getElementById('prize3Btn').textContent = prize3Done ? '🎁 3個交換済み ✓' : '🎁 3個プレゼント交換する';
+    document.getElementById('prize3Btn').style.background = prize3Done ? '#9AE6B4' : '';
+    document.getElementById('prize5Btn').textContent = prize5Done ? '🏆 5個交換済み ✓' : '🏆 5個プレゼント交換する';
+    document.getElementById('prize5Btn').style.background = prize5Done ? '#76E4F7' : '';
+    document.getElementById('prize3Btn').style.display = currentStamps.length >= 3 ? 'inline-block' : 'none';
+    document.getElementById('prize5Btn').style.display = currentStamps.length >= 5 ? 'inline-block' : 'none';
+    document.getElementById('stampModal').className = 'modal open';
+  }
+
+  async function deleteStamp(stampId) {
+    if (!confirm('このスタンプを削除しますか？')) return;
+    const res = await fetch(SUPABASE_URL + '/rest/v1/stamps?id=eq.' + stampId, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (res.ok) { await openStampModal(currentParticipantId, document.getElementById('modalTitle').textContent.replace(' さんのスタンプ', '')); loadParticipants(); }
+  }
+
+  async function togglePrize(num) {
+    if (!currentStamps.length) return;
+    const field = num === 3 ? 'prize_3' : 'prize_5';
+    const current = currentStamps.some(s => s[field]);
+    await fetch(SUPABASE_URL + '/rest/v1/stamps?id=eq.' + currentStamps[0].id, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: !current })
+    });
+    await openStampModal(currentParticipantId, document.getElementById('modalTitle').textContent.replace(' さんのスタンプ', ''));
+    loadParticipants();
+  }
+
+  function closeModal() { document.getElementById('stampModal').className = 'modal'; }
 
   async function addParticipant() {
-    const memberId = document.getElementById('newMemberId').value.trim();
-    const name = document.getElementById('newName').value.trim();
-    const password = document.getElementById('newPassword').value.trim();
-    const email = document.getElementById('newEmail').value.trim();
-
-    if (!memberId || !name || !password) {
-      alert('会員番号・氏名・電話番号は必須です');
-      return;
-    }
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/participants`, {
+    const nickname = document.getElementById('newNickname').value.trim();
+    const realName = document.getElementById('newRealName').value.trim();
+    if (!nickname || !realName) { alert('ニックネームと本名を入力してください'); return; }
+    const res = await fetch(SUPABASE_URL + '/rest/v1/participants', {
       method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ member_id: memberId, name, password, email: email || null })
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ nickname, real_name: realName })
     });
-
     if (res.ok) {
       document.getElementById('addSuccess').style.display = 'block';
-      document.getElementById('newMemberId').value = '';
-      document.getElementById('newName').value = '';
-      document.getElementById('newPassword').value = '';
-      document.getElementById('newEmail').value = '';
+      document.getElementById('newNickname').value = '';
+      document.getElementById('newRealName').value = '';
       setTimeout(() => document.getElementById('addSuccess').style.display = 'none', 3000);
       loadParticipants();
-    } else {
-      alert('追加に失敗しました。会員番号が重複している可能性があります。');
-    }
+    } else { alert('追加に失敗しました。ニックネームが重複している可能性があります。'); }
   }
-
-  async function loadCourses() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/courses?select=*&order=course_code.asc`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
-    const courses = await res.json();
-
-    const tbody = document.getElementById('courseTable');
-    if (courses.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#AAA;padding:20px">講座がありません</td></tr>';
-      return;
-    }
-    tbody.innerHTML = courses.map(c => `<tr><td>${c.course_code}</td><td>${c.course_name}</td></tr>`).join('');
-  }
-
-  async function addCourse() {
-    const code = document.getElementById('newCourseCode').value.trim();
-    const name = document.getElementById('newCourseName').value.trim();
-    if (!code || !name) { alert('講座コードと講座名を入力してください'); return; }
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ course_code: code, course_name: name })
-    });
-
-    if (res.ok) {
-      document.getElementById('courseSuccess').style.display = 'block';
-      document.getElementById('newCourseCode').value = '';
-      document.getElementById('newCourseName').value = '';
-      setTimeout(() => document.getElementById('courseSuccess').style.display = 'none', 3000);
-      loadCourses();
-    }
-  }
-
-  let allParticipants = {};
-  let allCourses = {};
 
   async function loadDiaries() {
-    // 参加者マップと講座マップを事前に取得
     const [pRes, cRes, dRes] = await Promise.all([
       fetch(SUPABASE_URL + '/rest/v1/participants?select=id,nickname,real_name',
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }),
@@ -529,19 +338,14 @@
       fetch(SUPABASE_URL + '/rest/v1/diaries?select=*&order=created_at.desc',
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } })
     ]);
-
     const participants = await pRes.json();
     const courses = await cRes.json();
     const diaries = await dRes.json();
-
     participants.forEach(p => allParticipants[p.id] = p);
     courses.forEach(c => allCourses[c.course_code] = c.course_name);
 
     const list = document.getElementById('diaryAdminList');
-    if (!diaries.length) {
-      list.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">日記がありません</div>';
-      return;
-    }
+    if (!diaries.length) { list.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">日記がありません</div>'; return; }
 
     list.innerHTML = diaries.map(d => {
       const p = allParticipants[d.participant_id] || {};
@@ -549,7 +353,6 @@
       const date = new Date(d.created_at).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
       const photos = [d.photo_url, d.photo_url2, d.photo_url3].filter(Boolean);
       const photoHtml = photos.length > 0 ? '<div style="display:flex;gap:4px;margin:8px 0">' + photos.map(url => '<img src="' + url + '" style="width:60px;height:60px;object-fit:cover;border-radius:6px">').join('') + '</div>' : '';
-
       return '<div style="background:#F9FAFB;border-radius:12px;padding:14px;margin-bottom:12px">' +
         '<div style="display:flex;justify-content:space-between;margin-bottom:6px">' +
           '<div><span style="font-weight:bold;color:var(--primary)">' + (p.nickname || '?') + '</span><span style="color:var(--muted);font-size:12px;margin-left:6px">' + (p.real_name || '') + '</span></div>' +
@@ -560,8 +363,8 @@
         photoHtml +
         '<div style="margin-top:8px">' +
           '<div style="font-size:12px;color:#48BB78;margin-bottom:4px">💬 スタッフコメント</div>' +
-          '<textarea id="comment_' + d.id + '" style="width:100%;padding:8px;border:2px solid #EEE;border-radius:8px;font-size:13px;font-family:Kosugi Maru,sans-serif;resize:vertical;min-height:60px;outline:none" placeholder="コメントを入力...">' + (d.staff_comment || '') + '</textarea>' +
-          '<button onclick="saveComment(' + d.id + ')" style="margin-top:6px;background:#48BB78;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-family:Kosugi Maru,sans-serif;cursor:pointer">💾 保存</button>' +
+          '<textarea id="comment_' + d.id + '" style="min-height:60px;margin-bottom:6px" placeholder="コメントを入力...">' + (d.staff_comment || '') + '</textarea>' +
+          '<button onclick="saveComment(' + d.id + ')" style="background:#48BB78;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-family:Kosugi Maru,sans-serif;cursor:pointer">💾 保存</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -574,60 +377,60 @@
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ staff_comment: comment || null })
     });
-    if (res.ok) {
-      alert('コメントを保存しました！');
-    } else {
-      alert('保存に失敗しました。');
-    }
+    if (res.ok) alert('コメントを保存しました！');
+    else alert('保存に失敗しました。');
+  }
+
+  async function loadQRCodes() {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/courses?select=*&order=course_code.asc',
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    const courses = await res.json();
+    const grid = document.getElementById('qrGrid');
+    grid.innerHTML = '';
+    courses.forEach(c => {
+      const url = BASE_URL + '/stamp.html?course=' + c.course_code;
+      const div = document.createElement('div');
+      div.className = 'qr-item';
+      div.innerHTML = '<div id="qr-' + c.course_code + '"></div><div class="course-name">' + c.course_name + '</div><div class="course-code">' + c.course_code + '</div>';
+      grid.appendChild(div);
+      setTimeout(() => { new QRCode(document.getElementById('qr-' + c.course_code), { text: url, width: 120, height: 120 }); }, 100);
+    });
   }
 
   async function exportParticipants() {
     const [pRes, sRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/participants?select=*&order=member_id.asc`,
-        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }),
-      fetch(`${SUPABASE_URL}/rest/v1/stamps?select=*`,
-        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
+      fetch(SUPABASE_URL + '/rest/v1/participants?select=*&order=id.asc',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }),
+      fetch(SUPABASE_URL + '/rest/v1/stamps?select=*',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } })
     ]);
     const participants = await pRes.json();
     const stamps = await sRes.json();
-
     const stampMap = {};
-    stamps.forEach(s => stampMap[s.member_id] = (stampMap[s.member_id] || 0) + 1);
-
-    const rows = [['会員番号', '氏名', 'メールアドレス', 'スタンプ数']];
-    participants.forEach(p => {
-      rows.push([p.member_id, p.name, p.email || '', stampMap[p.member_id] || 0]);
-    });
-
+    stamps.forEach(s => stampMap[s.participant_id] = (stampMap[s.participant_id] || 0) + 1);
+    const rows = [['ID', 'ニックネーム', '本名', 'スタンプ数']];
+    participants.forEach(p => rows.push([p.id, p.nickname, p.real_name, stampMap[p.id] || 0]));
     downloadCSV(rows, '参加者一覧.csv');
   }
 
   async function exportStamps() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/stamps?select=*&order=stamped_at.asc`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/stamps?select=*&order=stamped_at.asc',
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
     const stamps = await res.json();
-
-    const rows = [['会員番号', '講座コード', 'スタンプ日時']];
-    stamps.forEach(s => rows.push([s.member_id, s.course_code, s.stamped_at]));
-
+    const rows = [['参加者ID', '講座コード', 'スタンプ日時']];
+    stamps.forEach(s => rows.push([s.participant_id, s.course_code, s.stamped_at]));
     downloadCSV(rows, 'スタンプ履歴.csv');
   }
 
   function downloadCSV(rows, filename) {
     const bom = '\uFEFF';
-    const csv = bom + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const csv = bom + rows.map(r => r.map(v => '"' + v + '"').join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
+    a.href = URL.createObjectURL(blob);
     a.download = filename;
     a.click();
   }
-
-  // Enterキーでログイン
-  document.getElementById('adminPass').addEventListener('keydown', e => {
-    if (e.key === 'Enter') adminLogin();
-  });
 </script>
 </body>
 </html>
