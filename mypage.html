@@ -64,6 +64,7 @@
   .panel { display: none; }
   .panel.active { display: block; }
   .back-link { text-align: center; margin-bottom: 12px; }
+  .btn-download { background: #667EEA; color: white; box-shadow: 0 4px 0 #4C63D2; }
   .back-link a { color: var(--muted); font-size: 13px; text-decoration: none; }
 
   /* スライドボタン */
@@ -193,6 +194,7 @@
 
     <div class="panel" id="panel-list">
       <div id="diaryList"><div class="empty-msg">まだ日記がありません</div></div>
+      <button class="btn btn-download" onclick="downloadDiaryPDF()" style="margin-top:12px">📥 日記をPDFでダウンロード</button>
     </div>
   </div>
 </div>
@@ -410,6 +412,69 @@
         '<div class="diary-item-text">' + d.diary_text + '</div>' + photo +
         '<div class="diary-item-date">' + date + '</div></div>';
     }).join('');
+  }
+
+  async function downloadDiaryPDF() {
+    const res = await fetch(
+      SUPABASE_URL + '/rest/v1/diaries?participant_id=eq.' + participantId + '&select=*&order=created_at.asc',
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+    );
+    const diaries = await res.json();
+
+    if (!diaries || diaries.length === 0) {
+      alert('まだ日記がありません！');
+      return;
+    }
+
+    // HTML形式でPDF用コンテンツを作成
+    const name = document.getElementById('userName').textContent;
+    let html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>${name}さんの日記</title>
+<style>
+  body { font-family: 'Hiragino Kaku Gothic Pro', 'メイリオ', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #FFF9F0; }
+  h1 { color: #FF6B35; text-align: center; font-size: 28px; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 32px; font-size: 14px; }
+  .diary-entry { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); page-break-inside: avoid; }
+  .diary-course { color: #FF6B35; font-weight: bold; font-size: 15px; margin-bottom: 8px; }
+  .diary-text { font-size: 14px; line-height: 1.8; color: #2D2D2D; white-space: pre-wrap; }
+  .diary-date { font-size: 12px; color: #888; margin-top: 8px; text-align: right; }
+  .diary-photo { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-top: 12px; }
+  @media print { body { background: white; } .diary-entry { box-shadow: none; border: 1px solid #EEE; } }
+</style>
+</head>
+<body>
+<h1>🎪 ${name}さんのなつやすみ日記</h1>
+<div class="subtitle">よみうりカルチャー自由が丘 2026年 夏</div>`;
+
+    diaries.forEach(d => {
+      const date = new Date(d.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+      const courseName = courseMap[d.course_code] || d.course_code;
+      const photo = d.photo_url ? `<img src="${d.photo_url}" class="diary-photo">` : '';
+      html += `
+<div class="diary-entry">
+  <div class="diary-course">📖 ${courseName}</div>
+  <div class="diary-text">${d.diary_text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+  ${photo}
+  <div class="diary-date">${date}</div>
+</div>`;
+    });
+
+    html += '</body></html>';
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name + 'さんの日記.html';
+    a.click();
+
+    // 印刷ダイアログを促す
+    setTimeout(() => {
+      alert('ダウンロードしたファイルをブラウザで開いて「印刷」するとPDFで保存できます！');
+    }, 500);
   }
 
   async function deleteDiary(diaryId) {
