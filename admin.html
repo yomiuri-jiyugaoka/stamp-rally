@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理者画面 - スタンプラリー</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
+
+  :root {
+    --primary: #FF6B35;
+    --accent: #4ECDC4;
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --muted: #888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Kosugi Maru', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary);
+  }
+
+  .back-btn {
+    background: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: 'Kosugi Maru', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 0;
+  }
+
+  .stat-box {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Kosugi Maru', sans-serif;
+    cursor: pointer;
+    transition: transform 0.1s;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-gray { background: #EEE; color: var(--text); }
+
+  /* テーブル */
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    background: var(--bg);
+    padding: 10px 8px;
+    text-align: left;
+    color: var(--muted);
+    font-weight: normal;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #F0F0F0;
+    color: var(--text);
+  }
+
+  .stamp-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .prize-badge {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+
+  .prize-3 { background: #FFF3CD; color: #856404; }
+  .prize-5 { background: #D1ECF1; color: #0C5460; }
+
+  /* フォーム */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #EEE;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Kosugi Maru', sans-serif;
+    color: var(--text);
+    outline: none;
+  }
+
+  input:focus, select:focus { border-color: var(--primary); }
+
+  .success-msg {
+    background: #F0FFF4;
+    border: 1px solid #9AE6B4;
+    color: #276749;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 8px;
+    display: none;
+  }
+
+  .tab-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Kosugi Maru', sans-serif;
+    cursor: pointer;
+    background: #EEE;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .tab.active { background: var(--primary); color: white; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* パスワード画面 */
+  .login-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+
+  .login-box {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+
+  .login-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+  .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- 管理者パスワード認証 -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div style="font-size:40px;margin-bottom:12px">🔐</div>
+    <div class="login-title">管理者ログイン</div>
+    <div class="login-sub">管理者パスワードを入力してください</div>
+    <input type="password" id="adminPass" placeholder="パスワード" style="margin-bottom:12px">
+    <button class="btn btn-primary" style="width:100%" onclick="adminLogin()">ログイン</button>
+    <div style="color:red;font-size:13px;margin-top:8px;display:none" id="loginError">パスワードが違います</div>
+  </div>
+</div>
+
+<div class="header">
+  <button class="back-btn" onclick="window.location.href='index.html'">← 戻る</button>
+  <div class="header-title">⚙️ 管理者画面</div>
+  <div style="width:60px"></div>
+</div>
+
+<!-- 統計 -->
+<div class="card">
+  <div class="section-title">📊 集計</div>
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-num" id="statTotal">-</div>
+      <div class="stat-label">参加者数</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statStamps">-</div>
+      <div class="stat-label">総スタンプ数</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statPrize">-</div>
+      <div class="stat-label">プレゼント対象</div>
+    </div>
+  </div>
+</div>
+
+<!-- タブ -->
+<div class="tab-group">
+  <button class="tab active" onclick="switchTab('participants')">参加者一覧</button>
+  <button class="tab" onclick="switchTab('add')">参加者追加</button>
+  <button class="tab" onclick="switchTab('courses')">講座管理</button>
+  <button class="tab" onclick="switchTab('export')">CSV出力</button>
+</div>
+
+<!-- 参加者一覧 -->
+<div class="panel active" id="panel-participants">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="section-title" style="margin-bottom:0">👥 参加者一覧</div>
+      <button class="btn btn-gray" onclick="loadParticipants()">🔄 更新</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>会員番号</th>
+            <th>氏名</th>
+            <th>スタンプ</th>
+          </tr>
+        </thead>
+        <tbody id="participantTable">
+          <tr><td colspan="3" style="text-align:center;color:#AAA;padding:20px">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 参加者追加 -->
+<div class="panel" id="panel-add">
+  <div class="card">
+    <div class="section-title">➕ 参加者を追加</div>
+    <div class="form-grid">
+      <input type="text" id="newMemberId" placeholder="会員番号" inputmode="numeric">
+      <input type="text" id="newName" placeholder="氏名">
+    </div>
+    <input type="tel" id="newPassword" placeholder="電話番号（パスワード）" style="margin-bottom:10px" inputmode="numeric">
+    <input type="email" id="newEmail" placeholder="メールアドレス（任意）" style="margin-bottom:12px">
+    <button class="btn btn-primary" onclick="addParticipant()">➕ 追加する</button>
+    <div class="success-msg" id="addSuccess">追加しました！</div>
+  </div>
+</div>
+
+<!-- 講座管理 -->
+<div class="panel" id="panel-courses">
+  <div class="card">
+    <div class="section-title">📚 講座を追加</div>
+    <div class="form-grid">
+      <input type="text" id="newCourseCode" placeholder="講座コード（例：A01）">
+      <input type="text" id="newCourseName" placeholder="講座名">
+    </div>
+    <button class="btn btn-accent" onclick="addCourse()">➕ 追加する</button>
+    <div class="success-msg" id="courseSuccess">追加しました！</div>
+  </div>
+  <div class="card" style="margin-top:0">
+    <div class="section-title">📋 講座一覧</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>コード</th><th>講座名</th></tr>
+        </thead>
+        <tbody id="courseTable">
+          <tr><td colspan="2" style="text-align:center;color:#AAA;padding:20px">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CSV出力 -->
+<div class="panel" id="panel-export">
+  <div class="card">
+    <div class="section-title">📥 データをダウンロード</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Excelで開けるCSV形式でダウンロードできます</p>
+    <button class="btn btn-primary" onclick="exportParticipants()">👥 参加者一覧をダウンロード</button>
+    <button class="btn btn-accent" onclick="exportStamps()">🌟 スタンプ履歴をダウンロード</button>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://xxtqlxfknmbbfjdidjjl.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4dHFseGZrbm1iYmZqZGlkampsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzM5MjIsImV4cCI6MjA5NjMwOTkyMn0.gtvl8xfz6a6axkn7OYsmZVGubIiVY5QRCWBiNY2oUwU';
+  const ADMIN_PASSWORD = 'admin1234'; // ← 管理者パスワードをここで変更
+
+  function adminLogin() {
+    const pass = document.getElementById('adminPass').value;
+    if (pass === ADMIN_PASSWORD) {
+      document.getElementById('loginOverlay').style.display = 'none';
+      loadAll();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      const names = ['participants', 'add', 'courses', 'export'];
+      t.className = 'tab' + (names[i] === tab ? ' active' : '');
+    });
+    document.querySelectorAll('.panel').forEach(p => p.className = 'panel');
+    document.getElementById(`panel-${tab}`).className = 'panel active';
+    if (tab === 'courses') loadCourses();
+  }
+
+  async function loadAll() {
+    await loadParticipants();
+    await loadStats();
+  }
+
+  async function loadParticipants() {
+    const [pRes, sRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/participants?select=*&order=member_id.asc`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/stamps?select=*`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
+    ]);
+
+    const participants = await pRes.json();
+    const stamps = await sRes.json();
+
+    const stampMap = {};
+    stamps.forEach(s => {
+      stampMap[s.member_id] = (stampMap[s.member_id] || 0) + 1;
+    });
+
+    const tbody = document.getElementById('participantTable');
+    if (participants.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#AAA;padding:20px">参加者がいません</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = participants.map(p => {
+      const count = stampMap[p.member_id] || 0;
+      let prizes = '';
+      if (count >= 3) prizes += '<span class="prize-badge prize-3">3個達成</span>';
+      if (count >= 5) prizes += '<span class="prize-badge prize-5">5個達成</span>';
+      return `<tr>
+        <td>${p.member_id}</td>
+        <td>${p.name}</td>
+        <td><span class="stamp-badge">${count}個</span>${prizes}</td>
+      </tr>`;
+    }).join('');
+
+    // 統計更新
+    const prizeCount = participants.filter(p => (stampMap[p.member_id] || 0) >= 3).length;
+    document.getElementById('statTotal').textContent = participants.length;
+    document.getElementById('statStamps').textContent = stamps.length;
+    document.getElementById('statPrize').textContent = prizeCount;
+  }
+
+  async function loadStats() {}
+
+  async function addParticipant() {
+    const memberId = document.getElementById('newMemberId').value.trim();
+    const name = document.getElementById('newName').value.trim();
+    const password = document.getElementById('newPassword').value.trim();
+    const email = document.getElementById('newEmail').value.trim();
+
+    if (!memberId || !name || !password) {
+      alert('会員番号・氏名・電話番号は必須です');
+      return;
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/participants`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ member_id: memberId, name, password, email: email || null })
+    });
+
+    if (res.ok) {
+      document.getElementById('addSuccess').style.display = 'block';
+      document.getElementById('newMemberId').value = '';
+      document.getElementById('newName').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('newEmail').value = '';
+      setTimeout(() => document.getElementById('addSuccess').style.display = 'none', 3000);
+      loadParticipants();
+    } else {
+      alert('追加に失敗しました。会員番号が重複している可能性があります。');
+    }
+  }
+
+  async function loadCourses() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/courses?select=*&order=course_code.asc`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    const courses = await res.json();
+
+    const tbody = document.getElementById('courseTable');
+    if (courses.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#AAA;padding:20px">講座がありません</td></tr>';
+      return;
+    }
+    tbody.innerHTML = courses.map(c => `<tr><td>${c.course_code}</td><td>${c.course_name}</td></tr>`).join('');
+  }
+
+  async function addCourse() {
+    const code = document.getElementById('newCourseCode').value.trim();
+    const name = document.getElementById('newCourseName').value.trim();
+    if (!code || !name) { alert('講座コードと講座名を入力してください'); return; }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ course_code: code, course_name: name })
+    });
+
+    if (res.ok) {
+      document.getElementById('courseSuccess').style.display = 'block';
+      document.getElementById('newCourseCode').value = '';
+      document.getElementById('newCourseName').value = '';
+      setTimeout(() => document.getElementById('courseSuccess').style.display = 'none', 3000);
+      loadCourses();
+    }
+  }
+
+  async function exportParticipants() {
+    const [pRes, sRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/participants?select=*&order=member_id.asc`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/stamps?select=*`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
+    ]);
+    const participants = await pRes.json();
+    const stamps = await sRes.json();
+
+    const stampMap = {};
+    stamps.forEach(s => stampMap[s.member_id] = (stampMap[s.member_id] || 0) + 1);
+
+    const rows = [['会員番号', '氏名', 'メールアドレス', 'スタンプ数']];
+    participants.forEach(p => {
+      rows.push([p.member_id, p.name, p.email || '', stampMap[p.member_id] || 0]);
+    });
+
+    downloadCSV(rows, '参加者一覧.csv');
+  }
+
+  async function exportStamps() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/stamps?select=*&order=stamped_at.asc`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    const stamps = await res.json();
+
+    const rows = [['会員番号', '講座コード', 'スタンプ日時']];
+    stamps.forEach(s => rows.push([s.member_id, s.course_code, s.stamped_at]));
+
+    downloadCSV(rows, 'スタンプ履歴.csv');
+  }
+
+  function downloadCSV(rows, filename) {
+    const bom = '\uFEFF';
+    const csv = bom + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+  }
+
+  // Enterキーでログイン
+  document.getElementById('adminPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') adminLogin();
+  });
+</script>
+</body>
+</html>

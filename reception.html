@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>受付 - よみうりカルチャー自由が丘</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
+  :root { --primary: #FF6B35; --accent: #4ECDC4; --bg: #1A1A2E; --card: #16213E; --text: #FFFFFF; --muted: #AAA; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Kosugi Maru', sans-serif; background: var(--bg); min-height: 100vh; padding: 16px; color: var(--text); }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .header-title { font-size: 16px; font-weight: bold; color: var(--accent); }
+  .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 14px; }
+  .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-family: 'Kosugi Maru', sans-serif; font-weight: bold; cursor: pointer; transition: transform 0.1s; margin-bottom: 8px; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 0 #CC4A1A; }
+  .btn-accent { background: var(--accent); color: white; box-shadow: 0 4px 0 #2EA89F; }
+  .btn-green { background: #48BB78; color: white; box-shadow: 0 4px 0 #276749; }
+  .btn-gray { background: rgba(255,255,255,0.1); color: white; }
+  input[type="text"] { width: 100%; padding: 14px; border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 18px; font-family: 'Kosugi Maru', sans-serif; color: white; background: rgba(255,255,255,0.1); outline: none; margin-bottom: 12px; }
+  input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: rgba(255,255,255,0.4); }
+  select { width: 100%; padding: 12px; border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 15px; font-family: 'Kosugi Maru', sans-serif; color: #2D2D2D; background: #FFFFFF; outline: none; margin-bottom: 12px; }
+  .search-results { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .result-item { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: space-between; }
+  .result-item:hover { background: rgba(78,205,196,0.3); }
+  .result-name { font-size: 16px; font-weight: bold; }
+  .result-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .result-stamps { font-size: 20px; color: var(--primary); font-weight: bold; }
+  .selected-card { background: rgba(78,205,196,0.15); border: 2px solid var(--accent); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: none; }
+  .selected-name { font-size: 22px; font-weight: bold; margin-bottom: 4px; }
+  .selected-stamps { font-size: 16px; color: var(--accent); margin-bottom: 12px; }
+  .qr-container { background: white; border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 12px; display: none; }
+  .qr-container p { color: #333; font-size: 13px; margin-top: 8px; }
+  .course-history { margin-top: 12px; }
+  .course-history-title { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .course-tag { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 10px; font-size: 12px; margin: 2px; color: white; }
+  .success-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(72,187,120,0.97); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+  .success-icon { font-size: 80px; margin-bottom: 16px; animation: pop 0.5s ease; }
+  @keyframes pop { 0%{transform:scale(0)} 60%{transform:scale(1.3)} 100%{transform:scale(1)} }
+  .success-text { font-size: 26px; font-weight: bold; color: white; text-align: center; }
+  .success-sub { font-size: 18px; color: rgba(255,255,255,0.9); margin-top: 8px; text-align: center; }
+  .error-msg { background: rgba(255,100,100,0.2); border: 1px solid rgba(255,100,100,0.5); color: #FF9999; padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-top: 8px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🎪 よみうりカルチャー自由が丘 受付</div>
+  <button style="background:rgba(255,255,255,0.1);border:none;border-radius:8px;padding:6px 12px;color:white;font-family:Kosugi Maru,sans-serif;cursor:pointer;font-size:13px" onclick="location.href='admin.html'">⚙️ 管理</button>
+</div>
+
+<div class="card">
+  <div class="section-title">🔍 参加者を探す</div>
+  <input type="text" id="searchInput" placeholder="名前（ひらがな・カタカナ・漢字）で検索" oninput="searchParticipants()">
+  <div class="search-results" id="searchResults"></div>
+  <div class="error-msg" id="errorMsg">見つかりませんでした</div>
+</div>
+
+<div class="selected-card" id="selectedCard">
+  <div class="selected-name" id="selectedName">-</div>
+  <div class="selected-stamps">🌟 スタンプ <span id="selectedStamps">0</span> 個</div>
+
+  <!-- 受講済み講座 -->
+  <div class="course-history" id="courseHistory"></div>
+
+  <!-- QRコード表示 -->
+  <div class="qr-container" id="qrContainer">
+    <div id="qrCode"></div>
+    <p>📱 このQRをスマホで読んでね！</p>
+  </div>
+
+  <button class="btn btn-accent" onclick="toggleQR()">📱 マイページQRを表示</button>
+
+  <div class="section-title" style="margin-top:16px">🎯 スタンプを押す</div>
+  <select id="courseSelect">
+    <option value="">講座を選んでください</option>
+  </select>
+  <button class="btn btn-green" onclick="addStamp()">✅ スタンプを押す！</button>
+  <button class="btn btn-gray" onclick="clearSelection()" style="margin-top:4px">← 別の人を選ぶ</button>
+</div>
+
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon">🌟</div>
+  <div class="success-text" id="successText">スタンプを押しました！</div>
+  <div class="success-sub" id="successSub"></div>
+  <button class="btn btn-gray" style="margin-top:32px;width:200px" onclick="closeSuccess()">次の人へ</button>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://xxtqlxfknmbbfjdidjjl.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4dHFseGZrbm1iYmZqZGlkampsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzM5MjIsImV4cCI6MjA5NjMwOTkyMn0.gtvl8xfz6a6axkn7OYsmZVGubIiVY5QRCWBiNY2oUwU';
+
+  let currentParticipant = null;
+  let currentStampCount = 0;
+  let qrVisible = false;
+  let searchTimer = null;
+  let courseMap = {};
+
+  async function loadCourses() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/courses?select=*&order=course_code.asc`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    const courses = await res.json();
+    const select = document.getElementById('courseSelect');
+    select.innerHTML = '<option value="">講座を選んでください</option>';
+    courses.forEach(c => {
+      courseMap[c.course_code] = c.course_name;
+      const opt = document.createElement('option');
+      opt.value = c.course_code;
+      opt.textContent = c.course_name;
+      select.appendChild(opt);
+    });
+  }
+
+  async function searchParticipants() {
+    const query = document.getElementById('searchInput').value.trim();
+    const resultsDiv = document.getElementById('searchResults');
+    const errorMsg = document.getElementById('errorMsg');
+    if (query.length < 1) { resultsDiv.innerHTML = ''; errorMsg.style.display = 'none'; return; }
+
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(async () => {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/participants?or=(real_name.ilike.*${query}*,nickname.ilike.*${query}*)&select=*`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      );
+      const data = await res.json();
+      if (!data || data.length === 0) { resultsDiv.innerHTML = ''; errorMsg.style.display = 'block'; return; }
+      errorMsg.style.display = 'none';
+
+      const stampsRes = await fetch(`${SUPABASE_URL}/rest/v1/stamps?select=participant_id`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+      const stamps = await stampsRes.json();
+      const stampMap = {};
+      stamps.forEach(s => stampMap[s.participant_id] = (stampMap[s.participant_id] || 0) + 1);
+
+      resultsDiv.innerHTML = data.map(p => `
+        <div class="result-item" onclick="selectParticipant(${p.id}, '${p.nickname}', '${p.real_name}', ${stampMap[p.id] || 0})">
+          <div>
+            <div class="result-name">${p.nickname} さん</div>
+            <div class="result-sub">${p.real_name}</div>
+          </div>
+          <div class="result-stamps">🌟${stampMap[p.id] || 0}</div>
+        </div>
+      `).join('');
+    }, 300);
+  }
+
+  async function selectParticipant(id, nickname, realName, stampCount) {
+    currentParticipant = { id, nickname, realName };
+    currentStampCount = stampCount;
+    document.getElementById('selectedName').textContent = `${nickname} さん（${realName}）`;
+    document.getElementById('selectedStamps').textContent = stampCount;
+    document.getElementById('selectedCard').style.display = 'block';
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('qrContainer').style.display = 'none';
+    qrVisible = false;
+
+    // QRコード生成
+    document.getElementById('qrCode').innerHTML = '';
+    const url = `${location.origin}/mypage.html?id=${id}`;
+    new QRCode(document.getElementById('qrCode'), { text: url, width: 200, height: 200 });
+
+    // 受講済み講座を表示
+    const stampsRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${id}&select=course_code`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const stamps = await stampsRes.json();
+    const historyDiv = document.getElementById('courseHistory');
+    if (stamps && stamps.length > 0) {
+      historyDiv.innerHTML = '<div class="course-history-title">📚 受講済み講座：</div>' +
+        stamps.map(s => `<span class="course-tag">${courseMap[s.course_code] || s.course_code}</span>`).join('');
+    } else {
+      historyDiv.innerHTML = '<div class="course-history-title">📚 まだ受講していません</div>';
+    }
+  }
+
+  function toggleQR() {
+    qrVisible = !qrVisible;
+    document.getElementById('qrContainer').style.display = qrVisible ? 'block' : 'none';
+  }
+
+  async function addStamp() {
+    const courseCode = document.getElementById('courseSelect').value;
+    if (!courseCode) { alert('講座を選んでください'); return; }
+    if (!currentParticipant) return;
+
+    // 重複チェック
+    const dupRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${currentParticipant.id}&course_code=eq.${courseCode}&select=id`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const dupStamps = await dupRes.json();
+    if (dupStamps && dupStamps.length > 0) {
+      alert('この講座のスタンプはすでに押されています！');
+      return;
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/stamps`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        participant_id: currentParticipant.id,
+        course_code: courseCode,
+        stamped_at: new Date().toISOString()
+      })
+    });
+
+    if (res.ok) {
+      currentStampCount++;
+      document.getElementById('selectedStamps').textContent = currentStampCount;
+      document.getElementById('successText').textContent = `${currentParticipant.nickname}さんに スタンプを押しました！（${currentStampCount}個目）`;
+      let sub = '';
+      if (currentStampCount === 3) sub = '🎁 3個達成！プレゼントを渡してください！';
+      if (currentStampCount === 5) sub = '🏆 5個達成！スペシャルプレゼントを渡してください！';
+      document.getElementById('successSub').textContent = sub;
+      document.getElementById('successOverlay').style.display = 'flex';
+
+      // 受講済み講座を更新
+      const course = courseMap[courseCode] || courseCode;
+      const historyDiv = document.getElementById('courseHistory');
+      historyDiv.innerHTML += `<span class="course-tag">${course}</span>`;
+    } else {
+      alert('エラーが発生しました。もう一度試してください。');
+    }
+  }
+
+  function closeSuccess() {
+    document.getElementById('successOverlay').style.display = 'none';
+    document.getElementById('courseSelect').value = '';
+  }
+
+  function clearSelection() {
+    currentParticipant = null;
+    document.getElementById('selectedCard').style.display = 'none';
+    document.getElementById('searchInput').value = '';
+  }
+
+  loadCourses();
+</script>
+</body>
+</html>

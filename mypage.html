@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マイページ - よみうりカルチャー自由が丘</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
+  :root { --primary: #FF6B35; --accent: #4ECDC4; --bg: #FFF9F0; --card: #FFFFFF; --text: #2D2D2D; --muted: #888; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Kosugi Maru', sans-serif; background: var(--bg); min-height: 100vh; padding: 16px; background-image: radial-gradient(circle at 20% 20%, #FFE0D0 0%, transparent 50%), radial-gradient(circle at 80% 80%, #D0F5F2 0%, transparent 50%); }
+  .header { text-align: center; margin-bottom: 20px; padding-top: 8px; }
+  .header-title { font-size: 16px; font-weight: bold; color: var(--primary); }
+  .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 16px; }
+  .welcome-name { font-size: 24px; font-weight: bold; color: var(--text); text-align: center; }
+  .welcome-sub { font-size: 13px; color: var(--muted); margin-top: 4px; text-align: center; }
+  .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stamp { aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; }
+  .stamp.on { background: linear-gradient(135deg, #FF6B35, #FF8C5A); box-shadow: 0 4px 0 #CC4A1A; animation: stampIn 0.4s ease; }
+  .stamp.off { background: #F0F0F0; border: 2px dashed #DDD; }
+  .stamp.exchanged3 { background: linear-gradient(135deg, #48BB78, #38A169); box-shadow: 0 4px 0 #276749; }
+  .stamp.exchanged5 { background: linear-gradient(135deg, #4ECDC4, #2C9E96); box-shadow: 0 4px 0 #1a7a73; }
+  @keyframes stampIn { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  .stamp-number { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .stamp-exchanged-label { font-size: 9px; color: rgba(255,255,255,0.9); margin-top: 1px; }
+  .stamp.off .stamp-number { color: #CCC; }
+  .stamp-count { text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .stamp-count strong { color: var(--primary); font-size: 20px; }
+  .prize-banner { border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-top: 12px; cursor: pointer; }
+  .prize-3 { background: linear-gradient(135deg, #FFD700, #FFA500); display: none; }
+  .prize-5 { background: linear-gradient(135deg, #4ECDC4, #44A8A0); display: none; }
+  .prize-icon { font-size: 28px; }
+  .prize-text { color: white; }
+  .prize-text strong { font-size: 15px; display: block; }
+  .prize-text span { font-size: 12px; opacity: 0.9; }
+  .section-title { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 14px; }
+  .course-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #FFF9F0; border-radius: 10px; margin-bottom: 8px; }
+  .course-name { font-size: 14px; font-weight: bold; color: var(--text); }
+  .course-date { font-size: 11px; color: var(--muted); }
+  .empty-msg { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
+  .diary-form { display: flex; flex-direction: column; gap: 10px; }
+  .diary-select { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 10px; font-size: 14px; font-family: 'Kosugi Maru', sans-serif; color: var(--text); outline: none; background: white; }
+  textarea { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 10px; font-size: 14px; font-family: 'Kosugi Maru', sans-serif; color: var(--text); resize: vertical; min-height: 100px; outline: none; }
+  textarea:focus { border-color: var(--primary); }
+  .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-family: 'Kosugi Maru', sans-serif; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 0 #CC4A1A; }
+  .btn-accent { background: var(--accent); color: white; box-shadow: 0 4px 0 #2EA89F; }
+  .success-msg { background: #F0FFF4; border: 1px solid #9AE6B4; color: #276749; padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none; margin-top: 8px; }
+  .error-msg { background: #FFF0F0; border: 1px solid #FFCCCC; color: #CC3333; padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none; margin-top: 8px; }
+  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 16px; }
+  .error-page { text-align: center; padding: 40px 20px; }
+  .photo-upload { border: 2px dashed #DDD; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+  .photo-upload:hover { border-color: var(--primary); }
+  .photo-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-top: 8px; }
+  .diary-item { background: #FFF9F0; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  .diary-item-course { font-size: 13px; font-weight: bold; color: var(--primary); margin-bottom: 6px; }
+  .diary-item-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .diary-item-photo { width: 100%; border-radius: 8px; margin-top: 8px; }
+  .diary-item-date { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .tab-group { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab { flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 13px; font-family: 'Kosugi Maru', sans-serif; cursor: pointer; background: #EEE; color: var(--muted); }
+  .tab.active { background: var(--primary); color: white; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .back-link { text-align: center; margin-bottom: 12px; }
+  .back-link a { color: var(--muted); font-size: 13px; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🎪 よみうりカルチャー自由が丘<br>なつやすみスタンプラリー</div>
+</div>
+
+<div class="back-link"><a href="index.html">← ログイン画面に戻る</a></div>
+
+<div id="loadingDiv" class="loading">⏳ よみこみちゅう...</div>
+<div id="errorDiv" class="error-page" style="display:none">
+  <div style="font-size:60px;margin-bottom:16px">😢</div>
+  <p style="color:var(--muted);font-size:15px">ページがみつかりませんでした。<br>うけつけのひとにきいてね。</p>
+</div>
+
+<div id="mainContent" style="display:none">
+  <div class="card">
+    <div class="welcome-name">🌟 <span id="userName"></span> さん</div>
+    <div class="welcome-sub">今年の夏もがんばろう！</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">🎯 スタンプカード</div>
+    <div class="stamp-grid" id="stampGrid"></div>
+    <div class="stamp-count">あつめたスタンプ：<strong id="stampCount">0</strong> 個</div>
+    <div class="prize-banner prize-3" id="prize3" onclick="alert('🎁 3個達成おめでとう！\nうけつけのひとにこの画面をみせてね！')">
+      <div class="prize-icon">🎁</div>
+      <div class="prize-text"><strong>3個達成！プレゼントをもらおう</strong><span>うけつけスタッフにみせてね</span></div>
+    </div>
+    <div class="prize-banner prize-5" id="prize5" onclick="alert('🏆 5個達成おめでとう！\nうけつけのひとにこの画面をみせてね！')">
+      <div class="prize-icon">🏆</div>
+      <div class="prize-text"><strong>5個達成！スペシャルプレゼント！</strong><span>うけつけスタッフにみせてね</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">📚 参加した講座</div>
+    <div id="courseList"><div class="empty-msg">まだ講座に参加していません</div></div>
+  </div>
+
+  <div class="card">
+    <div class="tab-group">
+      <button class="tab active" id="tab-write" onclick="switchDiaryTab('write')">✏️ 日記を書く</button>
+      <button class="tab" id="tab-list" onclick="switchDiaryTab('list')">📖 日記を見る</button>
+    </div>
+
+    <div class="panel active" id="panel-write">
+      <div class="diary-form">
+        <select class="diary-select" id="diarySelect"><option value="">講座を選んでね</option></select>
+        <textarea id="diaryText" placeholder="今日はどんなことをしたかな？感想を書いてみよう！（200文字まで）" maxlength="200"></textarea>
+        <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+          <div style="font-size:32px">📷</div>
+          <div style="font-size:13px;color:var(--muted)">写真をえらぶ（タップ）</div>
+          <div style="font-size:11px;color:var(--muted)">※自動で小さくなります</div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(event)">
+        <img id="photoPreview" class="photo-preview">
+        <button class="btn btn-primary" onclick="saveDiary()">✏️ 日記を保存する</button>
+        <div class="success-msg" id="successMsg">日記を保存しました！✨</div>
+        <div class="error-msg" id="errorMsg">エラーが発生しました。もう一度試してね。</div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-list">
+      <div id="diaryList"><div class="empty-msg">まだ日記がありません</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://xxtqlxfknmbbfjdidjjl.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4dHFseGZrbm1iYmZqZGlkampsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzM5MjIsImV4cCI6MjA5NjMwOTkyMn0.gtvl8xfz6a6axkn7OYsmZVGubIiVY5QRCWBiNY2oUwU';
+
+  const params = new URLSearchParams(location.search);
+  const participantId = params.get('id');
+  let courseMap = {};
+  let compressedImageData = null;
+
+  async function init() {
+    if (!participantId) {
+      document.getElementById('loadingDiv').style.display = 'none';
+      document.getElementById('errorDiv').style.display = 'block';
+      return;
+    }
+
+    const pRes = await fetch(`${SUPABASE_URL}/rest/v1/participants?id=eq.${participantId}&select=*`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+    const participants = await pRes.json();
+
+    if (!participants || participants.length === 0) {
+      document.getElementById('loadingDiv').style.display = 'none';
+      document.getElementById('errorDiv').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('userName').textContent = participants[0].nickname;
+
+    const [sRes, cRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${participantId}&select=*&order=stamped_at.asc`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/courses?select=*`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
+    ]);
+    const stamps = await sRes.json();
+    const courses = await cRes.json();
+    courses.forEach(c => courseMap[c.course_code] = c.course_name);
+
+    const prize3Done = stamps.some(s => s.prize_3);
+    const prize5Done = stamps.some(s => s.prize_5);
+
+    const grid = document.getElementById('stampGrid');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 10; i++) {
+      const stamp = document.createElement('div');
+      let cls = 'stamp ';
+      let inner = '';
+      if (i <= stamps.length) {
+        if (prize5Done && i <= 5) {
+          cls += 'exchanged5';
+          inner = '<span>🏆</span><span class="stamp-exchanged-label">交換済</span>';
+        } else if (prize3Done && i <= 3) {
+          cls += 'exchanged3';
+          inner = '<span>✅</span><span class="stamp-exchanged-label">交換済</span>';
+        } else {
+          cls += 'on';
+          inner = '<span>🌟</span><span class="stamp-number">' + i + '</span>';
+        }
+      } else {
+        cls += 'off';
+        inner = '<span style="font-size:16px;color:#CCC">' + i + '</span>';
+      }
+      stamp.className = cls;
+      stamp.innerHTML = inner;
+      grid.appendChild(stamp);
+    }
+    document.getElementById('stampCount').textContent = stamps.length;
+
+    if (stamps.length >= 3) {
+      const el = document.getElementById('prize3');
+      el.style.display = 'flex';
+      if (prize3Done) { el.style.background = 'linear-gradient(135deg, #48BB78, #38A169)'; el.querySelector('strong').textContent = '3個達成！交換済み ✓'; el.querySelector('span').textContent = 'プレゼントをもらいました！'; }
+    }
+    if (stamps.length >= 5) {
+      const el = document.getElementById('prize5');
+      el.style.display = 'flex';
+      if (prize5Done) { el.style.background = 'linear-gradient(135deg, #4ECDC4, #2C9E96)'; el.querySelector('strong').textContent = '5個達成！交換済み ✓'; el.querySelector('span').textContent = 'スペシャルプレゼントをもらいました！'; }
+    }
+
+    const courseList = document.getElementById('courseList');
+    if (stamps.length > 0) {
+      courseList.innerHTML = stamps.map(s => {
+        const date = new Date(s.stamped_at).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+        return '<div class="course-item"><div style="font-size:20px">📖</div><div><div class="course-name">' + (courseMap[s.course_code] || s.course_code) + '</div><div class="course-date">' + date + '</div></div></div>';
+      }).join('');
+
+      const select = document.getElementById('diarySelect');
+      select.innerHTML = '<option value="">講座を選んでね</option>';
+      stamps.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.course_code;
+        opt.textContent = courseMap[s.course_code] || s.course_code;
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById('loadingDiv').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+  }
+
+  function switchDiaryTab(tab) {
+    document.getElementById('tab-write').className = 'tab' + (tab === 'write' ? ' active' : '');
+    document.getElementById('tab-list').className = 'tab' + (tab === 'list' ? ' active' : '');
+    document.getElementById('panel-write').className = 'panel' + (tab === 'write' ? ' active' : '');
+    document.getElementById('panel-list').className = 'panel' + (tab === 'list' ? ' active' : '');
+    if (tab === 'list') loadDiaries();
+  }
+
+  function previewPhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        const max = 800;
+        if (w > h && w > max) { h = h * max / w; w = max; }
+        else if (h > max) { w = w * max / h; h = max; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        compressedImageData = canvas.toDataURL('image/jpeg', 0.7);
+        const preview = document.getElementById('photoPreview');
+        preview.src = compressedImageData;
+        preview.style.display = 'block';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function saveDiary() {
+    const course = document.getElementById('diarySelect').value;
+    const text = document.getElementById('diaryText').value.trim();
+    const successMsg = document.getElementById('successMsg');
+    const errorMsg = document.getElementById('errorMsg');
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    if (!course || !text) { alert('講座と日記の内容を入力してね！'); return; }
+
+    let photoUrl = null;
+    if (compressedImageData) {
+      try {
+        const uploadRes = await fetch('/.netlify/functions/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageData: compressedImageData, fileName: 'photo.jpg', participantId })
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadData.url) photoUrl = uploadData.url;
+      } catch (e) { console.error('Photo upload failed:', e); }
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/diaries`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ participant_id: parseInt(participantId), course_code: course, diary_text: text, photo_url: photoUrl })
+    });
+
+    if (res.ok) {
+      successMsg.style.display = 'block';
+      document.getElementById('diaryText').value = '';
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('photoInput').value = '';
+      compressedImageData = null;
+      setTimeout(() => successMsg.style.display = 'none', 3000);
+    } else {
+      errorMsg.style.display = 'block';
+    }
+  }
+
+  async function loadDiaries() {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/diaries?participant_id=eq.${participantId}&select=*&order=created_at.desc`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const diaries = await res.json();
+    const list = document.getElementById('diaryList');
+    if (!diaries.length) { list.innerHTML = '<div class="empty-msg">まだ日記がありません</div>'; return; }
+    list.innerHTML = diaries.map(d => {
+      const date = new Date(d.created_at).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+      const photo = d.photo_url ? '<img src="' + d.photo_url + '" class="diary-item-photo">' : '';
+      return '<div class="diary-item">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<div class="diary-item-course">📖 ' + (courseMap[d.course_code] || d.course_code) + '</div>' +
+          '<button onclick="deleteDiary(' + d.id + ')" style="background:#FFF0F0;border:none;border-radius:8px;padding:4px 10px;font-size:12px;color:#CC3333;cursor:pointer;font-family:Kosugi Maru,sans-serif">🗑️ 削除</button>' +
+        '</div>' +
+        '<div class="diary-item-text">' + d.diary_text + '</div>' + photo +
+        '<div class="diary-item-date">' + date + '</div></div>';
+    }).join('');
+  }
+
+  async function deleteDiary(diaryId) {
+    if (!confirm('この日記を削除しますか？')) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/diaries?id=eq.${diaryId}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    if (res.ok) loadDiaries();
+    else alert('削除に失敗しました。');
+  }
+
+  init();
+</script>
+</body>
+</html>
