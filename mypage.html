@@ -379,13 +379,15 @@
   .goal-bar-fill { height: 100%; background: linear-gradient(90deg, #FFB3A0, #FF9B85); border-radius: 8px; transition: width 1s ease; }
   .goal-bar-markers { position: relative; height: 48px; }
   .goal-marker { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .goal-marker-dot { width: 28px; height: 28px; border-radius: 50%; background: white; border: 3px solid #E0D0F0; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.5s ease; }
-  .goal-marker-dot.done { border-color: #A8E8C0; background: #F0FFF6; }
+  .goal-marker-dot { width: 32px; height: 32px; border-radius: 50%; background: white; border: 3px solid #E0D0F0; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.5s ease; }
+  .goal-marker-dot.done { border-color: #A8E8C0; background: #F0FFF6; box-shadow: 0 2px 8px rgba(72,187,120,0.3); }
   .goal-marker-dot.next { border-color: #FFB3A0; background: #FFF0F8; animation: goalPulse 1.5s ease infinite; }
+  .goal-marker-dot.locked { opacity: 0.35; filter: grayscale(0.5); border-color: #E0D0F0; }
   @keyframes goalPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0.3)} 50%{box-shadow:0 0 0 8px rgba(255,107,53,0)} }
   .goal-marker-label { font-size: 10px; color: var(--muted); white-space: nowrap; }
   .goal-marker-label.done { color: #48BB78; font-weight: bold; }
   .goal-marker-label.next { color: #FF8C69; font-weight: bold; }
+  .goal-marker-label.locked { color: #CCC; }
 
   /* スタンプ達成演出 */
   .flash-overlay { position: fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:400; opacity:0; }
@@ -778,13 +780,14 @@
       const marker = document.createElement('div');
       marker.className = 'goal-marker';
       marker.style.left = leftPct + '%';
+      const dotClass = isDone ? 'done' : isNext ? 'next' : 'locked';
+      const labelClass = isDone ? 'done' : isNext ? 'next' : 'locked';
+      const labelText = isDone ? m.label + ' ✓' : isNext ? m.label + ' 次！' : m.label;
       marker.innerHTML =
-        '<div class="goal-marker-dot ' + (isDone ? 'done' : isNext ? 'next' : '') + '">' +
+        '<div class="goal-marker-dot ' + dotClass + '">' +
           (isDone ? '✓' : m.icon) +
         '</div>' +
-        '<div class="goal-marker-label ' + (isDone ? 'done' : isNext ? 'next' : '') + '">' +
-          m.label + (isDone ? ' ✓' : isNext ? ' 次！' : '') +
-        '</div>';
+        '<div class="goal-marker-label ' + labelClass + '">' + labelText + '</div>';
       markersDiv.appendChild(marker);
     });
   }
