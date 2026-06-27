@@ -6,7 +6,7 @@
 <title>マイページ - よみうりカルチャー自由が丘</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
-  :root { --primary: #FF6B35; --accent: #4ECDC4; --pink: #FF69B4; --purple: #9B59B6; --yellow: #FFD700; --green: #48BB78; --bg: #FFF0F5; --card: #FFFFFF; --text: #2D2D2D; --muted: #999; }
+  :root { --primary: #FF8C69; --accent: #7DD5CC; --pink: #FFB3D1; --purple: #C9A8E8; --yellow: #FFE566; --green: #8FD5A6; --bg: #FFF5FB; --card: #FFFFFF; --text: #4A4A4A; --muted: #AAA; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
@@ -33,7 +33,7 @@
     padding: 20px;
     box-shadow: 0 6px 24px rgba(255,105,180,0.1), 0 2px 8px rgba(0,0,0,0.04);
     margin-bottom: 14px;
-    border: 2px solid rgba(255,105,180,0.08);
+    border: 2px solid rgba(200,160,220,0.1);
     position: relative;
     z-index: 1;
     overflow: hidden;
@@ -41,19 +41,19 @@
 
   /* ウェルカムカード */
   .welcome-card {
-    background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 40%, #FFD700 100%);
+    background: linear-gradient(135deg, #FFB3D1 0%, #FFDAB9 40%, #FFE566 100%);
     border: none;
     text-align: center;
     padding: 24px 20px;
   }
   .welcome-deco { font-size: 48px; margin-bottom: 8px; display: block; animation: welcomeFloat 3s ease-in-out infinite; }
   @keyframes welcomeFloat { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-8px) rotate(3deg)} }
-  .welcome-name { font-size: 26px; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-  .welcome-sub { font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 4px; }
+  .welcome-name { font-size: 26px; font-weight: bold; color: #5A3A4A; text-shadow: 0 1px 2px rgba(255,255,255,0.5); }
+  .welcome-sub { font-size: 13px; color: rgba(90,58,74,0.8); margin-top: 4px; }
   .welcome-stars { font-size: 20px; margin-top: 8px; letter-spacing: 4px; }
 
   /* スタンプグリッド */
-  .stamp-card { background: linear-gradient(135deg, #FFF0F5, #F0F8FF); }
+  .stamp-card { background: linear-gradient(135deg, #FFF0F8, #F0FAFF); }
   .stamp-card-title { text-align: center; font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 14px; }
   .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
   .stamp {
@@ -90,8 +90,8 @@
   .stamp.off .stamp-number { color: #FFB8D0; }
 
   /* スタンプカウント */
-  .stamp-count-area { text-align: center; background: linear-gradient(135deg, #FFF0F5, #FFF4D0); border-radius: 16px; padding: 10px; margin-top: 8px; }
-  .stamp-count-num { font-size: 28px; font-weight: bold; color: var(--primary); }
+  .stamp-count-area { text-align: center; background: linear-gradient(135deg, #FFF0F8, #FFFAE0); border-radius: 16px; padding: 10px; margin-top: 8px; }
+  .stamp-count-num { font-size: 28px; font-weight: bold; color: #E8845A; }
   .stamp-count-label { font-size: 12px; color: var(--muted); }
 
   /* プレゼントバナー */
@@ -105,8 +105,8 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-  .prize-3 { background: linear-gradient(135deg, #FFD700, #FFA500); display: none; }
-  .prize-5 { background: linear-gradient(135deg, #4ECDC4, #44A8A0); display: none; }
+  .prize-3 { background: linear-gradient(135deg, #FFE899, #FFCC66); display: none; }
+  .prize-5 { background: linear-gradient(135deg, #A8E8E4, #7DCFCA); display: none; }
   .prize-icon { font-size: 32px; animation: prizeWiggle 1s ease infinite; }
   @keyframes prizeWiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-10deg)} 75%{transform:rotate(10deg)} }
   .prize-text { color: white; }
@@ -114,7 +114,7 @@
   .prize-text span { font-size: 12px; opacity: 0.9; }
 
   /* 講座リスト */
-  .course-card { background: linear-gradient(135deg, #F0FFF8, #F0F8FF); }
+  .course-card { background: linear-gradient(135deg, #F0FFF6, #F0F8FF); }
   .section-title { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
   .course-item {
     display: flex;
@@ -124,14 +124,14 @@
     background: white;
     border-radius: 14px;
     margin-bottom: 8px;
-    box-shadow: 0 2px 8px rgba(78,205,196,0.1);
-    border: 1.5px solid rgba(78,205,196,0.15);
+    box-shadow: 0 2px 8px rgba(150,210,200,0.12);
+    border: 1.5px solid rgba(150,210,200,0.2);
   }
   .course-icon-wrap {
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #4ECDC4, #44A8A0);
+    background: linear-gradient(135deg, #A8E4E0, #7DCFCA);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -143,12 +143,12 @@
   .empty-msg { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
 
   /* 日記 */
-  .diary-card { background: linear-gradient(135deg, #FFF8F0, #FFF0F8); }
+  .diary-card { background: linear-gradient(135deg, #FFF8FC, #F8F0FF); }
   .diary-form { display: flex; flex-direction: column; gap: 10px; }
   .diary-select {
     width: 100%;
     padding: 12px 14px;
-    border: 2px solid #FFD0E8;
+    border: 2px solid #E8D5F0;
     border-radius: 14px;
     font-size: 14px;
     font-family: 'Kosugi Maru', sans-serif;
@@ -160,7 +160,7 @@
   textarea {
     width: 100%;
     padding: 12px 14px;
-    border: 2px solid #FFD0E8;
+    border: 2px solid #E8D5F0;
     border-radius: 14px;
     font-size: 14px;
     font-family: 'Kosugi Maru', sans-serif;
@@ -176,10 +176,10 @@
     border-radius: 20px;
     padding: 16px;
     margin-bottom: 12px;
-    border: 2px solid #FFE4F0;
-    box-shadow: 0 3px 12px rgba(255,105,180,0.08);
+    border: 2px solid #ECD5F5;
+    box-shadow: 0 3px 12px rgba(180,130,220,0.08);
   }
-  .diary-item-course { font-size: 12px; font-weight: bold; color: var(--pink); margin-bottom: 6px; background: #FFF0F8; display: inline-block; padding: 3px 10px; border-radius: 20px; }
+  .diary-item-course { font-size: 12px; font-weight: bold; color: #C090D0; margin-bottom: 6px; background: #F8F0FF; display: inline-block; padding: 3px 10px; border-radius: 20px; }
   .diary-item-text { font-size: 14px; color: var(--text); line-height: 1.7; margin-top: 6px; }
   .diary-item-photo { width: 100%; border-radius: 12px; margin-top: 8px; }
   .diary-item-date { font-size: 11px; color: var(--muted); margin-top: 6px; }
@@ -189,7 +189,7 @@
     display: flex;
     gap: 6px;
     margin-bottom: 16px;
-    background: #FFE4F0;
+    background: #F5E8F8;
     padding: 4px;
     border-radius: 16px;
   }
@@ -202,14 +202,14 @@
     font-family: 'Kosugi Maru', sans-serif;
     cursor: pointer;
     background: transparent;
-    color: #CC69A0;
+    color: #C090B8;
     transition: all 0.2s;
   }
   .tab.active {
     background: white;
-    color: var(--pink);
+    color: #D490B8;
     font-weight: bold;
-    box-shadow: 0 2px 8px rgba(255,105,180,0.15);
+    box-shadow: 0 2px 8px rgba(200,130,180,0.15);
   }
   .panel { display: none; }
   .panel.active { display: block; }
@@ -217,15 +217,15 @@
   /* ボタン */
   .btn { width: 100%; padding: 14px; border: none; border-radius: 16px; font-size: 16px; font-family: 'Kosugi Maru', sans-serif; font-weight: bold; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
   .btn:active { transform: scale(0.97); }
-  .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8C5A); color: white; box-shadow: 0 4px 0 #CC4A1A, 0 6px 16px rgba(255,107,53,0.25); }
-  .btn-accent { background: linear-gradient(135deg, #4ECDC4, #44A8A0); color: white; box-shadow: 0 4px 0 #2EA89F; }
+  .btn-primary { background: linear-gradient(135deg, #FFB3A0, #FF9B85); color: white; box-shadow: 0 4px 0 #E88A75, 0 6px 16px rgba(255,150,130,0.25); }
+  .btn-accent { background: linear-gradient(135deg, #A8E4E0, #7DCFCA); color: #4A8A87; box-shadow: 0 4px 0 #6BBFBA; }
   .success-msg { background: #F0FFF4; border: 1px solid #9AE6B4; color: #276749; padding: 10px 14px; border-radius: 12px; font-size: 13px; display: none; margin-top: 8px; }
   .error-msg { background: #FFF0F0; border: 1px solid #FFCCCC; color: #CC3333; padding: 10px 14px; border-radius: 12px; font-size: 13px; display: none; margin-top: 8px; }
   .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 16px; }
   .error-page { text-align: center; padding: 40px 20px; }
 
   /* 写真 */
-  .photo-add-btn { background: #FFF0F8; border: 2px dashed #FFB8D0; border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; font-size: 13px; color: #CC69A0; margin-top: 6px; transition: all 0.2s; }
+  .photo-add-btn { background: #FAF0FF; border: 2px dashed #DDB8F0; border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; font-size: 13px; color: #B090C8; margin-top: 6px; transition: all 0.2s; }
   .photo-add-btn:hover { border-color: var(--pink); background: #FFE4F0; }
   .photo-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
   .photo-thumb { position: relative; width: 80px; height: 80px; }
@@ -243,14 +243,14 @@
   .photo-grid-3 .photo-main img { height: 350px; }
 
   /* スタッフコメント */
-  .staff-comment { background: linear-gradient(135deg, #F0FFF4, #E8FFF0); border-left: 4px solid #48BB78; border-radius: 0 14px 14px 0; padding: 12px 14px; margin-top: 10px; }
+  .staff-comment { background: linear-gradient(135deg, #F0FFF6, #EAFFF2); border-left: 4px solid #8FD5A6; border-radius: 0 14px 14px 0; padding: 12px 14px; margin-top: 10px; }
   .staff-comment-label { font-size: 11px; color: #48BB78; font-weight: bold; margin-bottom: 4px; }
   .staff-comment-text { font-size: 14px; color: #276749; line-height: 1.6; }
 
   /* その他 */
   .back-link { text-align: center; margin-bottom: 10px; position: relative; z-index: 1; }
   .back-link a { color: var(--muted); font-size: 13px; text-decoration: none; }
-  .btn-download { background: linear-gradient(135deg, #667EEA, #764BA2); color: white; box-shadow: 0 4px 0 #4C5BBB; }
+  .btn-download { background: linear-gradient(135deg, #C5B3E8, #B09ADA); color: white; box-shadow: 0 4px 0 #9B87C8; }
 
   /* 日記保存エフェクト */
   .save-effect { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: white; border-radius: 24px; padding: 32px 40px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 300; transition: transform 0.3s ease; pointer-events: none; }
