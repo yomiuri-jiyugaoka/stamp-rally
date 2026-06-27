@@ -345,11 +345,15 @@
 </div>
 
 <div id="loadingDiv" class="loading">
-  <div style="font-size:48px;animation:spin 1s linear infinite;display:inline-block">🌟</div>
-  <div style="margin-top:8px">よみこみちゅう...</div>
+  <div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px">
+    <img src="https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_melt1_cat.png" style="width:60px;animation:meltBounce 1s ease infinite">
+    <img src="https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_melt2_dog.png" style="width:60px;animation:meltBounce 1s ease infinite;animation-delay:0.2s">
+    <img src="https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_melt3_rabbit.png" style="width:60px;animation:meltBounce 1s ease infinite;animation-delay:0.4s">
+  </div>
+  <div style="font-size:16px;color:#C090C8;font-weight:bold">よみこみちゅう...</div>
 </div>
 <div id="errorDiv" class="error-page" style="display:none">
-  <div style="font-size:60px;margin-bottom:16px">😢</div>
+  <img src="https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_melt4_hamster.png" style="width:120px;margin-bottom:8px">
   <p style="color:var(--muted);font-size:15px">ページがみつかりませんでした。<br>うけつけのひとにきいてね。</p>
 </div>
 
@@ -362,13 +366,14 @@
 
 <style>
 @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+@keyframes meltBounce { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-10px) scale(1.05)} }
 </style>
 
 <div id="mainContent" style="display:none">
 
   <!-- ウェルカムカード -->
   <div class="card welcome-card">
-    <span class="welcome-deco">🎪</span>
+    <img src="https://yomiuri-jiyugaoka.github.io/stamp-rally/yumekawa_animal_panda.png" class="welcome-deco" style="width:90px;height:90px;object-fit:contain;border-radius:0;display:inline-block">
     <div class="welcome-name">🌟 <span id="userName"></span> さん</div>
     <div class="welcome-sub">今年の夏もがんばろう！</div>
     <div class="welcome-stars">⭐🌟⭐🌟⭐</div>
