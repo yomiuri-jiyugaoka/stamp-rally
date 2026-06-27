@@ -373,6 +373,20 @@
 <style>
 @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
 
+  /* ゴールバー */
+  .goal-bar-section { margin-top: 12px; }
+  .goal-bar-bg { height: 14px; background: #F0E8FF; border-radius: 8px; position: relative; margin-bottom: 4px; overflow: visible; }
+  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, #FFB3A0, #FF9B85); border-radius: 8px; transition: width 1s ease; }
+  .goal-bar-markers { position: relative; height: 48px; }
+  .goal-marker { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .goal-marker-dot { width: 28px; height: 28px; border-radius: 50%; background: white; border: 3px solid #E0D0F0; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.5s ease; }
+  .goal-marker-dot.done { border-color: #A8E8C0; background: #F0FFF6; }
+  .goal-marker-dot.next { border-color: #FFB3A0; background: #FFF0F8; animation: goalPulse 1.5s ease infinite; }
+  @keyframes goalPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0.3)} 50%{box-shadow:0 0 0 8px rgba(255,107,53,0)} }
+  .goal-marker-label { font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .goal-marker-label.done { color: #48BB78; font-weight: bold; }
+  .goal-marker-label.next { color: #FF8C69; font-weight: bold; }
+
   /* スタンプ達成演出 */
   .flash-overlay { position: fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:400; opacity:0; }
   @keyframes flashBurst { 0%{opacity:0} 20%{opacity:0.7} 100%{opacity:0} }
@@ -434,6 +448,14 @@
         <div class="slide-btn-track">← スライドして交換 →</div>
         <div class="slide-btn-handle" id="slideHandle5">🏆</div>
       </div>
+    </div>
+
+    <!-- ゴールバー -->
+    <div class="goal-bar-section" id="goalBarSection">
+      <div class="goal-bar-bg">
+        <div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div>
+      </div>
+      <div class="goal-bar-markers" id="goalBarMarkers"></div>
     </div>
 
     <!-- 8個達成 -->
@@ -710,6 +732,9 @@
       }
     }
 
+    // ゴールバー更新
+    updateGoalBar(stamps.length);
+
     const courseList = document.getElementById('courseList');
     if (stamps.length > 0) {
       courseList.innerHTML = stamps.map(s => {
@@ -731,6 +756,37 @@
 
     document.getElementById('loadingDiv').style.display = 'none';
     document.getElementById('mainContent').style.display = 'block';
+  }
+
+  function updateGoalBar(count) {
+    const milestones = [
+      { num: 3, icon: '🎁', label: '3個' },
+      { num: 5, icon: '🏆', label: '5個' },
+      { num: 8, icon: '💎', label: '8個' },
+      { num: 10, icon: '👑', label: '10個' },
+    ];
+    const maxStamps = 10;
+    const pct = Math.min(count / maxStamps * 100, 100);
+    document.getElementById('goalBarFill').style.width = pct + '%';
+
+    const markersDiv = document.getElementById('goalBarMarkers');
+    markersDiv.innerHTML = '';
+    milestones.forEach(m => {
+      const leftPct = (m.num / maxStamps * 100);
+      const isDone = count >= m.num;
+      const isNext = !isDone && milestones.find(x => x.num > count) === m;
+      const marker = document.createElement('div');
+      marker.className = 'goal-marker';
+      marker.style.left = leftPct + '%';
+      marker.innerHTML =
+        '<div class="goal-marker-dot ' + (isDone ? 'done' : isNext ? 'next' : '') + '">' +
+          (isDone ? '✓' : m.icon) +
+        '</div>' +
+        '<div class="goal-marker-label ' + (isDone ? 'done' : isNext ? 'next' : '') + '">' +
+          m.label + (isDone ? ' ✓' : isNext ? ' 次！' : '') +
+        '</div>';
+      markersDiv.appendChild(marker);
+    });
   }
 
   function switchDiaryTab(tab) {
