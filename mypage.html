@@ -357,6 +357,12 @@
   <p style="color:var(--muted);font-size:15px">ページがみつかりませんでした。<br>うけつけのひとにきいてね。</p>
 </div>
 
+<!-- 達成演出オーバーレイ -->
+<div class="flash-overlay" id="flashOverlay"></div>
+<div class="achievement-animal" id="achievementAnimal" style="display:none">
+  <img id="achievementAnimalImg" style="width:160px;height:160px;object-fit:contain">
+</div>
+
 <!-- 背景デコ -->
 <div class="bg-deco" style="top:5%;left:2%">🌈</div>
 <div class="bg-deco" style="top:15%;right:3%">⭐</div>
@@ -366,6 +372,20 @@
 
 <style>
 @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+
+  /* スタンプ達成演出 */
+  .flash-overlay { position: fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:400; opacity:0; }
+  @keyframes flashBurst { 0%{opacity:0} 20%{opacity:0.7} 100%{opacity:0} }
+  .achievement-animal { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0); z-index:450; pointer-events:none; }
+  @keyframes animalPop { 0%{transform:translate(-50%,-50%) scale(0) rotate(-10deg);opacity:0} 40%{transform:translate(-50%,-50%) scale(1.4) rotate(5deg);opacity:1} 70%{transform:translate(-50%,-50%) scale(1.1) rotate(-2deg)} 100%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:1} }
+  @keyframes animalExit { 0%{opacity:1;transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)} }
+
+  /* スタンプぴょん演出 */
+  @keyframes stampPopOut { 0%{transform:scale(1)} 30%{transform:scale(1.5) translateY(-8px)} 60%{transform:scale(0.9)} 100%{transform:scale(1)} }
+
+  /* キラキラ */
+  @keyframes sparkle { 0%,100%{opacity:0;transform:scale(0)} 50%{opacity:1;transform:scale(1)} }
+  .sparkle-dot { position:absolute; border-radius:50%; pointer-events:none; animation:sparkle 1.5s ease infinite; }
 @keyframes meltBounce { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-10px) scale(1.05)} }
 </style>
 
@@ -582,6 +602,9 @@
         else if (prize5Done && i <= 5) { exchanged = true; exchangeColor = 'linear-gradient(135deg,#A8E4E0,#80D0C8)'; }
         else if (prize3Done && i <= 3) { exchanged = true; exchangeColor = 'linear-gradient(135deg,#A8E8C0,#80D8A0)'; }
 
+        // 新スタンプかどうかチェック（最新のスタンプ）
+        const isNew = (i === stamps.length) && !exchanged;
+
         if (exchanged) {
           cls += 'on';
           inner = '<div style="position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center">' +
@@ -595,10 +618,21 @@
           inner = '<img src="' + img + '" style="width:85%;height:85%;object-fit:contain">';
           stamp.style.background = stampColors[i-1];
           stamp.style.boxShadow = '0 4px 0 ' + stampShadows[i-1] + ', 0 6px 12px rgba(0,0,0,0.08)';
+          if (isNew) {
+            stamp.style.animation = 'stampPopOut 0.6s ease';
+          }
         }
       } else {
         cls += 'off';
-        inner = '<img src="' + img + '" style="width:75%;height:75%;object-fit:contain;filter:grayscale(1) opacity(0.2)">';
+        // キラキラドット
+        const sparkColors = ['#FFD700','#FF69B4','#7DD5CC','#A8E8C0'];
+        const sc = sparkColors[(i-1) % sparkColors.length];
+        const delay = ((i-1) * 0.15) % 1.5;
+        inner = '<div style="position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center">' +
+          '<img src="' + img + '" style="width:75%;height:75%;object-fit:contain;filter:grayscale(1) opacity(0.2)">' +
+          '<div class="sparkle-dot" style="width:6px;height:6px;background:' + sc + ';top:4px;right:4px;animation-delay:' + delay + 's"></div>' +
+          '<div class="sparkle-dot" style="width:4px;height:4px;background:' + sc + ';bottom:6px;left:4px;animation-delay:' + (delay+0.5) + 's"></div>' +
+          '</div>';
       }
       stamp.className = cls;
       stamp.innerHTML = inner;
@@ -1088,6 +1122,35 @@
     document.getElementById('slideBtn' + num + 'Container').style.display = 'none';
     document.getElementById('exchangeModal').className = 'exchange-modal open';
     launchFireworks();
+    showAchievementEffect(num);
+  }
+
+  function showAchievementEffect(num) {
+    const animalImgs = [
+      'https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_mark_hiyoko.png',
+      'https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_mark02_kuma.png',
+      'https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_mark07_lion.png',
+      'https://yomiuri-jiyugaoka.github.io/stamp-rally/animal_mark09_tora.png',
+    ];
+    const flashColors = {3:'#FFE899', 5:'#A8E4E0', 8:'#FFB3D1', 10:'#C9A8E8'};
+    const animalMap = {3:0, 5:1, 8:2, 10:3};
+
+    // 画面フラッシュ
+    const flash = document.getElementById('flashOverlay');
+    flash.style.background = flashColors[num] || '#FFE899';
+    flash.style.animation = 'flashBurst 0.8s ease forwards';
+    flash.addEventListener('animationend', () => { flash.style.animation = ''; flash.style.opacity = '0'; }, { once: true });
+
+    // 動物ポップアップ
+    const animal = document.getElementById('achievementAnimal');
+    const img = document.getElementById('achievementAnimalImg');
+    img.src = animalImgs[animalMap[num]] || animalImgs[0];
+    animal.style.display = 'block';
+    animal.style.animation = 'animalPop 0.8s ease forwards';
+    setTimeout(() => {
+      animal.style.animation = 'animalExit 0.5s ease forwards';
+      setTimeout(() => { animal.style.display = 'none'; animal.style.animation = ''; }, 500);
+    }, 2000);
   }
 
   function launchFireworks() {

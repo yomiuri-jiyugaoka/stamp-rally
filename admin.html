@@ -156,7 +156,10 @@
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div class="section-title" style="margin-bottom:0">📝 日記一覧</div>
-      <button class="btn btn-gray" onclick="loadDiaries()">🔄 更新</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gray" onclick="loadDiaries()" style="margin-bottom:0;padding:8px 12px;font-size:12px">🔄 更新</button>
+        <button class="btn btn-accent" onclick="downloadAllDiaries()" style="margin-bottom:0;padding:8px 12px;font-size:12px">📥 全件DL</button>
+      </div>
     </div>
     <div id="diaryAdminList"><div style="text-align:center;color:#AAA;padding:20px">読み込み中...</div></div>
   </div>
@@ -415,6 +418,97 @@
         '</div>' +
       '</div>';
     }).join('');
+  }
+
+  async function downloadAllDiaries() {
+    const [pRes, cRes, dRes] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/participants?select=id,nickname,real_name',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }),
+      fetch(SUPABASE_URL + '/rest/v1/courses?select=course_code,course_name',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }),
+      fetch(SUPABASE_URL + '/rest/v1/diaries?select=*&order=participant_id.asc,created_at.asc',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } })
+    ]);
+    const participants = await pRes.json();
+    const courses = await cRes.json();
+    const diaries = await dRes.json();
+
+    const pMap = {};
+    participants.forEach(p => pMap[p.id] = p);
+    const cMap = {};
+    courses.forEach(c => cMap[c.course_code] = c.course_name);
+
+    // 参加者ごとにグループ化
+    const grouped = {};
+    diaries.forEach(d => {
+      if (!grouped[d.participant_id]) grouped[d.participant_id] = [];
+      grouped[d.participant_id].push(d);
+    });
+
+    let html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>なつやすみ日記 全件</title>
+<style>
+  body { font-family: 'Hiragino Kaku Gothic Pro','メイリオ',sans-serif; max-width: 900px; margin: 0 auto; padding: 40px 20px; background: #FFF9F0; }
+  h1 { color: #FF8C69; text-align: center; font-size: 28px; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #AAA; font-size: 14px; margin-bottom: 32px; }
+  .participant-section { margin-bottom: 40px; page-break-inside: avoid; }
+  .participant-name { background: linear-gradient(135deg, #FFB3A0, #FF9B85); color: white; padding: 10px 20px; border-radius: 12px; font-size: 18px; font-weight: bold; margin-bottom: 12px; }
+  .diary-entry { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #FFE4F0; page-break-inside: avoid; }
+  .diary-course { color: #FF8C69; font-weight: bold; font-size: 14px; margin-bottom: 8px; }
+  .diary-text { font-size: 15px; line-height: 1.8; color: #333; white-space: pre-wrap; margin-bottom: 8px; }
+  .diary-photo { width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; margin-top: 8px; background: #f5f5f5; }
+  .diary-photos-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; }
+  .diary-photos-2 img { width: 100%; height: 200px; object-fit: contain; border-radius: 6px; background: #f5f5f5; }
+  .staff-comment { background: #F0FFF4; border-left: 4px solid #8FD5A6; padding: 8px 12px; border-radius: 0 8px 8px 0; margin-top: 8px; font-size: 13px; color: #276749; }
+  .staff-comment-label { font-size: 11px; color: #8FD5A6; font-weight: bold; margin-bottom: 2px; }
+  .diary-date { font-size: 12px; color: #AAA; margin-top: 6px; text-align: right; }
+  .no-diary { color: #CCC; font-size: 14px; padding: 12px; }
+  @media print { body{background:white} .diary-entry{box-shadow:none;border:1px solid #EEE} }
+</style>
+</head>
+<body>
+<h1>🎪 なつやすみスタンプラリー 日記まとめ</h1>
+<div class="subtitle">よみうりカルチャー自由が丘 2026年 夏　※ダウンロード後はブラウザで開いて印刷またはWord等で編集できます</div>`;
+
+    Object.keys(grouped).forEach(pid => {
+      const p = pMap[pid] || { nickname: '?', real_name: '?' };
+      const entries = grouped[pid];
+      html += `<div class="participant-section">
+        <div class="participant-name">🌟 ${p.nickname} さん（${p.real_name}）</div>`;
+      entries.forEach(d => {
+        const date = new Date(d.created_at).toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+        const course = cMap[d.course_code] || d.course_code;
+        const photos = [d.photo_url, d.photo_url2, d.photo_url3].filter(Boolean);
+        let photoHtml = '';
+        if (photos.length === 1) photoHtml = `<img src="${photos[0]}" class="diary-photo">`;
+        else if (photos.length >= 2) photoHtml = `<div class="diary-photos-2">${photos.map(u=>`<img src="${u}">`).join('')}</div>`;
+        const commentHtml = d.staff_comment ? `<div class="staff-comment"><div class="staff-comment-label">💬 スタッフより</div>${d.staff_comment}</div>` : '';
+        html += `<div class="diary-entry">
+          <div class="diary-course">📖 ${course}</div>
+          <div class="diary-text">${(d.diary_text||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+          ${photoHtml}
+          ${commentHtml}
+          <div class="diary-date">${date}</div>
+        </div>`;
+      });
+      html += '</div>';
+    });
+
+    if (Object.keys(grouped).length === 0) {
+      html += '<p style="text-align:center;color:#AAA">日記がありません</p>';
+    }
+
+    html += '</body></html>';
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'なつやすみ日記まとめ_' + new Date().toLocaleDateString('ja-JP').replace(/\//g,'-') + '.html';
+    a.click();
+    setTimeout(() => alert('ダウンロードしました！\nブラウザで開いて印刷、またはWordにコピーして編集できます。'), 500);
   }
 
   async function saveComment(diaryId) {
