@@ -6,68 +6,251 @@
 <title>マイページ - よみうりカルチャー自由が丘</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
-  :root { --primary: #FF6B35; --accent: #4ECDC4; --bg: #FFF9F0; --card: #FFFFFF; --text: #2D2D2D; --muted: #888; }
+  :root { --primary: #FF6B35; --accent: #4ECDC4; --pink: #FF69B4; --purple: #9B59B6; --yellow: #FFD700; --green: #48BB78; --bg: #FFF0F5; --card: #FFFFFF; --text: #2D2D2D; --muted: #999; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Kosugi Maru', sans-serif; background: var(--bg); min-height: 100vh; padding: 16px; background-image: radial-gradient(circle at 10% 10%, #FFE0D0 0%, transparent 40%), radial-gradient(circle at 90% 90%, #D0F5F2 0%, transparent 40%); }
-  .header { text-align: center; margin-bottom: 16px; padding-top: 8px; }
-  .header-title { font-size: 14px; font-weight: bold; color: var(--primary); }
-  .card { background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 6px 24px rgba(255,107,53,0.08), 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1.5px solid rgba(255,107,53,0.08); }
-  .welcome-name { font-size: 26px; font-weight: bold; color: var(--text); text-align: center; }
-  .welcome-sub { font-size: 13px; color: var(--muted); margin-top: 4px; text-align: center; }
+
+  body {
+    font-family: 'Kosugi Maru', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 12px;
+    background-image:
+      radial-gradient(circle at 5% 5%, #FFE4F0 0%, transparent 30%),
+      radial-gradient(circle at 95% 10%, #E4F8FF 0%, transparent 30%),
+      radial-gradient(circle at 50% 95%, #FFF4D0 0%, transparent 30%);
+  }
+
+  /* 背景デコレーション */
+  .bg-deco { position: fixed; pointer-events: none; z-index: 0; font-size: 28px; opacity: 0.12; }
+
+  .header { text-align: center; margin-bottom: 12px; padding-top: 4px; position: relative; z-index: 1; }
+  .header-title { font-size: 13px; font-weight: bold; color: var(--primary); }
+
+  /* カード */
+  .card {
+    background: var(--card);
+    border-radius: 28px;
+    padding: 20px;
+    box-shadow: 0 6px 24px rgba(255,105,180,0.1), 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 14px;
+    border: 2px solid rgba(255,105,180,0.08);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  /* ウェルカムカード */
+  .welcome-card {
+    background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 40%, #FFD700 100%);
+    border: none;
+    text-align: center;
+    padding: 24px 20px;
+  }
+  .welcome-deco { font-size: 48px; margin-bottom: 8px; display: block; animation: welcomeFloat 3s ease-in-out infinite; }
+  @keyframes welcomeFloat { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-8px) rotate(3deg)} }
+  .welcome-name { font-size: 26px; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+  .welcome-sub { font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 4px; }
+  .welcome-stars { font-size: 20px; margin-top: 8px; letter-spacing: 4px; }
+
+  /* スタンプグリッド */
+  .stamp-card { background: linear-gradient(135deg, #FFF0F5, #F0F8FF); }
+  .stamp-card-title { text-align: center; font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 14px; }
   .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
-  .stamp { aspect-ratio: 1; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; transition: transform 0.2s; }
-  .stamp.on { background: linear-gradient(135deg, #FF6B35, #FF8C5A); box-shadow: 0 4px 0 #CC4A1A, 0 6px 12px rgba(255,107,53,0.25); animation: stampIn 0.4s ease; }
-  .stamp.on:active { transform: scale(0.95); }
-  .stamp.off { background: linear-gradient(135deg, #F5F5F5, #EBEBEB); border: 2px dashed #DDD; }
-  .stamp.exchanged3 { background: linear-gradient(135deg, #48BB78, #38A169); box-shadow: 0 4px 0 #276749, 0 6px 12px rgba(72,187,120,0.25); }
-  .stamp.exchanged5 { background: linear-gradient(135deg, #4ECDC4, #2C9E96); box-shadow: 0 4px 0 #1a7a73, 0 6px 12px rgba(78,205,196,0.25); }
-  @keyframes stampIn { 0%{transform:scale(0) rotate(-10deg)} 60%{transform:scale(1.2) rotate(3deg)} 100%{transform:scale(1) rotate(0)} }
-  .stamp-number { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 2px; }
-  .stamp-exchanged-label { font-size: 9px; color: rgba(255,255,255,0.9); margin-top: 1px; }
-  .stamp.off .stamp-number { color: #CCC; }
-  .stamp-count { text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .stamp-count strong { color: var(--primary); font-size: 20px; }
-  .prize-banner { border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-top: 12px; cursor: pointer; }
+  .stamp {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: transform 0.2s;
+  }
+  .stamp.on {
+    background: linear-gradient(135deg, #FF6B35, #FF8C5A);
+    box-shadow: 0 4px 0 #CC4A1A, 0 6px 12px rgba(255,107,53,0.3);
+    animation: stampIn 0.4s ease;
+  }
+  .stamp.on:active { transform: scale(0.92); }
+  .stamp.off {
+    background: white;
+    border: 2px dashed #FFB8D0;
+  }
+  .stamp.exchanged3 {
+    background: linear-gradient(135deg, #48BB78, #38A169);
+    box-shadow: 0 4px 0 #276749, 0 6px 12px rgba(72,187,120,0.3);
+  }
+  .stamp.exchanged5 {
+    background: linear-gradient(135deg, #4ECDC4, #2C9E96);
+    box-shadow: 0 4px 0 #1a7a73, 0 6px 12px rgba(78,205,196,0.3);
+  }
+  @keyframes stampIn { 0%{transform:scale(0) rotate(-15deg)} 60%{transform:scale(1.25) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+  .stamp-number { font-size: 9px; color: rgba(255,255,255,0.85); margin-top: 1px; }
+  .stamp-exchanged-label { font-size: 8px; color: rgba(255,255,255,0.9); margin-top: 1px; }
+  .stamp.off .stamp-number { color: #FFB8D0; }
+
+  /* スタンプカウント */
+  .stamp-count-area { text-align: center; background: linear-gradient(135deg, #FFF0F5, #FFF4D0); border-radius: 16px; padding: 10px; margin-top: 8px; }
+  .stamp-count-num { font-size: 28px; font-weight: bold; color: var(--primary); }
+  .stamp-count-label { font-size: 12px; color: var(--muted); }
+
+  /* プレゼントバナー */
+  .prize-banner {
+    border-radius: 18px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
   .prize-3 { background: linear-gradient(135deg, #FFD700, #FFA500); display: none; }
   .prize-5 { background: linear-gradient(135deg, #4ECDC4, #44A8A0); display: none; }
-  .prize-icon { font-size: 28px; }
+  .prize-icon { font-size: 32px; animation: prizeWiggle 1s ease infinite; }
+  @keyframes prizeWiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-10deg)} 75%{transform:rotate(10deg)} }
   .prize-text { color: white; }
-  .prize-text strong { font-size: 15px; display: block; }
+  .prize-text strong { font-size: 15px; display: block; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
   .prize-text span { font-size: 12px; opacity: 0.9; }
-  .section-title { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 14px; }
-  .course-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #FFF9F0; border-radius: 10px; margin-bottom: 8px; }
-  .course-name { font-size: 14px; font-weight: bold; color: var(--text); }
-  .course-date { font-size: 11px; color: var(--muted); }
-  .empty-msg { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
+
+  /* 講座リスト */
+  .course-card { background: linear-gradient(135deg, #F0FFF8, #F0F8FF); }
+  .section-title { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .course-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: white;
+    border-radius: 14px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(78,205,196,0.1);
+    border: 1.5px solid rgba(78,205,196,0.15);
+  }
+  .course-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4ECDC4, #44A8A0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .course-name { font-size: 13px; font-weight: bold; color: var(--text); }
+  .course-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .empty-msg { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
+
+  /* 日記 */
+  .diary-card { background: linear-gradient(135deg, #FFF8F0, #FFF0F8); }
   .diary-form { display: flex; flex-direction: column; gap: 10px; }
-  .diary-select { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 10px; font-size: 14px; font-family: 'Kosugi Maru', sans-serif; color: var(--text); outline: none; background: white; }
-  textarea { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 10px; font-size: 14px; font-family: 'Kosugi Maru', sans-serif; color: var(--text); resize: vertical; min-height: 100px; outline: none; }
-  textarea:focus { border-color: var(--primary); }
-  .btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-family: 'Kosugi Maru', sans-serif; font-weight: bold; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8C5A); color: white; box-shadow: 0 4px 0 #CC4A1A, 0 6px 16px rgba(255,107,53,0.25); }
-  .btn-accent { background: var(--accent); color: white; box-shadow: 0 4px 0 #2EA89F; }
-  .success-msg { background: #F0FFF4; border: 1px solid #9AE6B4; color: #276749; padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none; margin-top: 8px; }
-  .error-msg { background: #FFF0F0; border: 1px solid #FFCCCC; color: #CC3333; padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none; margin-top: 8px; }
-  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 16px; }
-  .error-page { text-align: center; padding: 40px 20px; }
-  .photo-upload { border: 2px dashed #DDD; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
-  .photo-upload:hover { border-color: var(--primary); }
-  .photo-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-top: 8px; }
-  .diary-item { background: #FFF9F0; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1.5px solid rgba(255,107,53,0.08); }
-  .diary-item-course { font-size: 13px; font-weight: bold; color: var(--primary); margin-bottom: 6px; }
-  .diary-item-text { font-size: 14px; color: var(--text); line-height: 1.6; }
-  .diary-item-photo { width: 100%; border-radius: 8px; margin-top: 8px; }
+  .diary-select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #FFD0E8;
+    border-radius: 14px;
+    font-size: 14px;
+    font-family: 'Kosugi Maru', sans-serif;
+    color: var(--text);
+    outline: none;
+    background: white;
+  }
+  .diary-select:focus { border-color: var(--pink); }
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #FFD0E8;
+    border-radius: 14px;
+    font-size: 14px;
+    font-family: 'Kosugi Maru', sans-serif;
+    color: var(--text);
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    background: white;
+  }
+  textarea:focus { border-color: var(--pink); }
+  .diary-item {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 2px solid #FFE4F0;
+    box-shadow: 0 3px 12px rgba(255,105,180,0.08);
+  }
+  .diary-item-course { font-size: 12px; font-weight: bold; color: var(--pink); margin-bottom: 6px; background: #FFF0F8; display: inline-block; padding: 3px 10px; border-radius: 20px; }
+  .diary-item-text { font-size: 14px; color: var(--text); line-height: 1.7; margin-top: 6px; }
+  .diary-item-photo { width: 100%; border-radius: 12px; margin-top: 8px; }
   .diary-item-date { font-size: 11px; color: var(--muted); margin-top: 6px; }
-  .tab-group { display: flex; gap: 8px; margin-bottom: 16px; background: #F5F5F5; padding: 4px; border-radius: 14px; }
-  .tab { flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 13px; font-family: 'Kosugi Maru', sans-serif; cursor: pointer; background: transparent; color: var(--muted); transition: all 0.2s; }
-  .tab.active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+  /* タブ */
+  .tab-group {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    background: #FFE4F0;
+    padding: 4px;
+    border-radius: 16px;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    font-size: 13px;
+    font-family: 'Kosugi Maru', sans-serif;
+    cursor: pointer;
+    background: transparent;
+    color: #CC69A0;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: white;
+    color: var(--pink);
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255,105,180,0.15);
+  }
   .panel { display: none; }
   .panel.active { display: block; }
-  .back-link { text-align: center; margin-bottom: 12px; }
-  .staff-comment { background: #F0FFF4; border-left: 4px solid #48BB78; border-radius: 0 10px 10px 0; padding: 10px 14px; margin-top: 10px; }
+
+  /* ボタン */
+  .btn { width: 100%; padding: 14px; border: none; border-radius: 16px; font-size: 16px; font-family: 'Kosugi Maru', sans-serif; font-weight: bold; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, #FF6B35, #FF8C5A); color: white; box-shadow: 0 4px 0 #CC4A1A, 0 6px 16px rgba(255,107,53,0.25); }
+  .btn-accent { background: linear-gradient(135deg, #4ECDC4, #44A8A0); color: white; box-shadow: 0 4px 0 #2EA89F; }
+  .success-msg { background: #F0FFF4; border: 1px solid #9AE6B4; color: #276749; padding: 10px 14px; border-radius: 12px; font-size: 13px; display: none; margin-top: 8px; }
+  .error-msg { background: #FFF0F0; border: 1px solid #FFCCCC; color: #CC3333; padding: 10px 14px; border-radius: 12px; font-size: 13px; display: none; margin-top: 8px; }
+  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 16px; }
+  .error-page { text-align: center; padding: 40px 20px; }
+
+  /* 写真 */
+  .photo-add-btn { background: #FFF0F8; border: 2px dashed #FFB8D0; border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; font-size: 13px; color: #CC69A0; margin-top: 6px; transition: all 0.2s; }
+  .photo-add-btn:hover { border-color: var(--pink); background: #FFE4F0; }
+  .photo-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .photo-thumb { position: relative; width: 80px; height: 80px; }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid #FFD0E8; }
+  .photo-thumb-del { position: absolute; top: -6px; right: -6px; background: #FF4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  /* 写真グリッド */
+  .photo-grid-1 { width: 100%; }
+  .photo-grid-1 img { width: 100%; border-radius: 12px; object-fit: contain; max-height: 300px; background: #FFF0F8; }
+  .photo-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .photo-grid-2 img { width: 100%; border-radius: 10px; object-fit: contain; height: 250px; background: #FFF0F8; }
+  .photo-grid-3 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .photo-grid-3 .photo-main { grid-column: 1 / -1; }
+  .photo-grid-3 img { width: 100%; border-radius: 10px; object-fit: contain; height: 250px; background: #FFF0F8; }
+  .photo-grid-3 .photo-main img { height: 350px; }
+
+  /* スタッフコメント */
+  .staff-comment { background: linear-gradient(135deg, #F0FFF4, #E8FFF0); border-left: 4px solid #48BB78; border-radius: 0 14px 14px 0; padding: 12px 14px; margin-top: 10px; }
   .staff-comment-label { font-size: 11px; color: #48BB78; font-weight: bold; margin-bottom: 4px; }
   .staff-comment-text { font-size: 14px; color: #276749; line-height: 1.6; }
+
+  /* その他 */
+  .back-link { text-align: center; margin-bottom: 10px; position: relative; z-index: 1; }
+  .back-link a { color: var(--muted); font-size: 13px; text-decoration: none; }
+  .btn-download { background: linear-gradient(135deg, #667EEA, #764BA2); color: white; box-shadow: 0 4px 0 #4C5BBB; }
 
   /* 日記保存エフェクト */
   .save-effect { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: white; border-radius: 24px; padding: 32px 40px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 300; transition: transform 0.3s ease; pointer-events: none; }
@@ -161,22 +344,45 @@
   </div>
 </div>
 
-<div id="loadingDiv" class="loading">⏳ よみこみちゅう...</div>
+<div id="loadingDiv" class="loading">
+  <div style="font-size:48px;animation:spin 1s linear infinite;display:inline-block">🌟</div>
+  <div style="margin-top:8px">よみこみちゅう...</div>
+</div>
 <div id="errorDiv" class="error-page" style="display:none">
   <div style="font-size:60px;margin-bottom:16px">😢</div>
   <p style="color:var(--muted);font-size:15px">ページがみつかりませんでした。<br>うけつけのひとにきいてね。</p>
 </div>
 
+<!-- 背景デコ -->
+<div class="bg-deco" style="top:5%;left:2%">🌈</div>
+<div class="bg-deco" style="top:15%;right:3%">⭐</div>
+<div class="bg-deco" style="top:40%;left:1%">🌸</div>
+<div class="bg-deco" style="top:60%;right:2%">🎵</div>
+<div class="bg-deco" style="top:80%;left:3%">🌟</div>
+
+<style>
+@keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+</style>
+
 <div id="mainContent" style="display:none">
-  <div class="card" style="background:linear-gradient(135deg,#FF6B35,#FF8C5A);border:none">
-    <div class="welcome-name" style="color:white">🌟 <span id="userName"></span> さん</div>
-    <div class="welcome-sub" style="color:rgba(255,255,255,0.85)">今年の夏もがんばろう！✨</div>
+
+  <!-- ウェルカムカード -->
+  <div class="card welcome-card">
+    <span class="welcome-deco">🎪</span>
+    <div class="welcome-name">🌟 <span id="userName"></span> さん</div>
+    <div class="welcome-sub">今年の夏もがんばろう！</div>
+    <div class="welcome-stars">⭐🌟⭐🌟⭐</div>
   </div>
 
-  <div class="card">
-    <div class="section-title">🎯 スタンプカード</div>
+  <!-- スタンプカード -->
+  <div class="card stamp-card">
+    <div class="stamp-card-title">🎯 スタンプカード 🎯</div>
     <div class="stamp-grid" id="stampGrid"></div>
-    <div class="stamp-count">あつめたスタンプ：<strong id="stampCount">0</strong> 個</div>
+    <div class="stamp-count-area">
+      <div class="stamp-count-num"><span id="stampCount">0</span> 個</div>
+      <div class="stamp-count-label">あつめたスタンプ</div>
+    </div>
+
     <div class="prize-banner prize-3" id="prize3">
       <div class="prize-icon">🎁</div>
       <div class="prize-text"><strong>3個達成！プレゼントをもらおう</strong><span>うけつけスタッフにみせてね</span></div>
@@ -204,12 +410,14 @@
     </div>
   </div>
 
-  <div class="card">
+  <!-- 参加した講座 -->
+  <div class="card course-card">
     <div class="section-title">📚 参加した講座</div>
-    <div id="courseList"><div class="empty-msg">まだ講座に参加していません</div></div>
+    <div id="courseList"><div class="empty-msg">まだ講座に参加していません 🌱</div></div>
   </div>
 
-  <div class="card">
+  <!-- 日記 -->
+  <div class="card diary-card">
     <div class="tab-group">
       <button class="tab active" id="tab-write" onclick="switchDiaryTab('write')">✏️ 日記を書く</button>
       <button class="tab" id="tab-list" onclick="switchDiaryTab('list')">📖 日記を見る</button>
@@ -217,13 +425,13 @@
 
     <div class="panel active" id="panel-write">
       <div class="diary-form">
-        <select class="diary-select" id="diarySelect"><option value="">講座を選んでね</option></select>
+        <select class="diary-select" id="diarySelect"><option value="">📖 講座を選んでね</option></select>
         <textarea id="diaryText" placeholder="今日はどんなことをしたかな？感想を書いてみよう！（200文字まで）" maxlength="200"></textarea>
         <div class="photo-thumbs" id="photoThumbs"></div>
         <div class="photo-add-btn" id="photoAddBtn" onclick="document.getElementById('photoInput').click()">
-          <div style="font-size:24px">📷</div>
-          <div>写真をえらぶ（最大3枚）</div>
-          <div style="font-size:11px">※自動で小さくなります</div>
+          <div style="font-size:28px">📷</div>
+          <div style="font-weight:bold;margin-top:4px">写真をえらぶ（最大3枚）</div>
+          <div style="font-size:11px;margin-top:2px">※自動で小さくなります</div>
         </div>
         <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="addPhoto(event)">
         <button class="btn btn-primary" onclick="saveDiary()">✏️ 日記を保存する</button>
@@ -233,10 +441,11 @@
     </div>
 
     <div class="panel" id="panel-list">
-      <div id="diaryList"><div class="empty-msg">まだ日記がありません</div></div>
+      <div id="diaryList"><div class="empty-msg">まだ日記がありません 📝</div></div>
       <button class="btn btn-download" onclick="downloadDiaryPDF()" style="margin-top:12px">📥 日記を全部ダウンロード</button>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -345,7 +554,9 @@
     if (stamps.length > 0) {
       courseList.innerHTML = stamps.map(s => {
         const date = new Date(s.stamped_at).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
-        return '<div class="course-item"><div style="font-size:20px">📖</div><div><div class="course-name">' + (courseMap[s.course_code] || s.course_code) + '</div><div class="course-date">' + date + '</div></div></div>';
+        const icons = ['📚','🎨','🎵','⚽','🎭','🌿','🔬','🎪','🏃','🎯'];
+        const icon = icons[Math.abs(s.course_code.charCodeAt(0)) % icons.length];
+        return '<div class="course-item"><div class="course-icon-wrap">' + icon + '</div><div><div class="course-name">' + (courseMap[s.course_code] || s.course_code) + '</div><div class="course-date">📅 ' + date + '</div></div></div>';
       }).join('');
 
       const select = document.getElementById('diarySelect');
