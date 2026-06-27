@@ -626,16 +626,53 @@
       const el = document.getElementById('prize5');
       el.style.display = 'flex';
       if (prize5Done) {
-        el.style.background = 'linear-gradient(135deg, #4ECDC4, #2C9E96)';
+        el.style.background = 'linear-gradient(135deg, #A8E4E0, #80D0C8)';
         el.querySelector('strong').textContent = '5個達成！交換済み ✓';
         el.querySelector('span').textContent = 'スペシャルプレゼントをもらいました！';
       } else {
-        document.getElementById('slideBtn5Container').style.display = 'block';
-        document.getElementById('slideBtn5Container').style.background = 'linear-gradient(135deg, #4ECDC4, #44A8A0)';
-        document.getElementById('slideBtn5Container').style.borderRadius = '12px';
-        document.getElementById('slideBtn5Container').style.padding = '12px';
+        const sb5 = document.getElementById('slideBtn5Container');
+        sb5.style.display = 'block';
+        sb5.style.background = 'linear-gradient(135deg, #A8E4E0, #80D0C8)';
+        sb5.style.borderRadius = '12px';
+        sb5.style.padding = '12px';
         document.getElementById('slideBtn5').classList.add('active');
         document.getElementById('slideHandle5').classList.add('bouncing');
+      }
+    }
+
+    if (stamps.length >= 8) {
+      const el = document.getElementById('prize8');
+      el.style.display = 'flex';
+      if (prize8Done_init) {
+        el.style.background = 'linear-gradient(135deg, #C06090, #A0407A)';
+        el.querySelector('strong').textContent = '8個達成！交換済み ✓';
+        el.querySelector('span').textContent = 'プレゼントをもらいました！';
+      } else {
+        const sb8 = document.getElementById('slideBtn8Container');
+        sb8.style.display = 'block';
+        sb8.style.background = 'linear-gradient(135deg, #FFB3D1, #FF90BE)';
+        sb8.style.borderRadius = '12px';
+        sb8.style.padding = '12px';
+        document.getElementById('slideBtn8').classList.add('active');
+        document.getElementById('slideHandle8').classList.add('bouncing');
+      }
+    }
+
+    if (stamps.length >= 10) {
+      const el = document.getElementById('prize10');
+      el.style.display = 'flex';
+      if (prize10Done_init) {
+        el.style.background = 'linear-gradient(135deg, #6C3A8E, #5A2A7C)';
+        el.querySelector('strong').textContent = '10個達成！交換済み ✓';
+        el.querySelector('span').textContent = 'チャンピオン景品をもらいました！';
+      } else {
+        const sb10 = document.getElementById('slideBtn10Container');
+        sb10.style.display = 'block';
+        sb10.style.background = 'linear-gradient(135deg, #C9A8E8, #B090D8)';
+        sb10.style.borderRadius = '12px';
+        sb10.style.padding = '12px';
+        document.getElementById('slideBtn10').classList.add('active');
+        document.getElementById('slideHandle10').classList.add('bouncing');
       }
     }
 
