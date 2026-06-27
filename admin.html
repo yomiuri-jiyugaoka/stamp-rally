@@ -80,9 +80,11 @@
   <div class="modal-box">
     <div style="font-size:16px;font-weight:bold;margin-bottom:16px" id="modalTitle">スタンプ詳細</div>
     <div id="stampList"></div>
-    <div style="margin-top:16px;display:flex;gap:8px">
-      <button class="btn btn-green" id="prize3Btn" onclick="togglePrize(3)">🎁 3個プレゼント交換済み</button>
-      <button class="btn btn-accent" id="prize5Btn" onclick="togglePrize(5)">🏆 5個プレゼント交換済み</button>
+    <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn btn-green" id="prize3Btn" onclick="togglePrize(3)">🎁 3個交換</button>
+      <button class="btn btn-accent" id="prize5Btn" onclick="togglePrize(5)">🏆 5個交換</button>
+      <button class="btn" id="prize8Btn" onclick="togglePrize(8)" style="background:#FF69B4;color:white">💎 8個交換</button>
+      <button class="btn" id="prize10Btn" onclick="togglePrize(10)" style="background:#9B59B6;color:white">👑 10個交換</button>
     </div>
     <button class="btn btn-gray btn-full" style="margin-top:8px" onclick="closeModal()">閉じる</button>
   </div>
@@ -282,12 +284,20 @@
 
     const prize3Done = currentStamps.some(s => s.prize_3);
     const prize5Done = currentStamps.some(s => s.prize_5);
-    document.getElementById('prize3Btn').textContent = prize3Done ? '🎁 3個交換済み ✓' : '🎁 3個プレゼント交換する';
+    const prize8Done = currentStamps.some(s => s.prize_8);
+    const prize10Done = currentStamps.some(s => s.prize_10);
+    document.getElementById('prize3Btn').textContent = prize3Done ? '🎁 3個交換済み ✓' : '🎁 3個交換する';
     document.getElementById('prize3Btn').style.background = prize3Done ? '#9AE6B4' : '';
-    document.getElementById('prize5Btn').textContent = prize5Done ? '🏆 5個交換済み ✓' : '🏆 5個プレゼント交換する';
+    document.getElementById('prize5Btn').textContent = prize5Done ? '🏆 5個交換済み ✓' : '🏆 5個交換する';
     document.getElementById('prize5Btn').style.background = prize5Done ? '#76E4F7' : '';
+    document.getElementById('prize8Btn').textContent = prize8Done ? '💎 8個交換済み ✓' : '💎 8個交換する';
+    document.getElementById('prize8Btn').style.background = prize8Done ? '#F9A8D4' : '#FF69B4';
+    document.getElementById('prize10Btn').textContent = prize10Done ? '👑 10個交換済み ✓' : '👑 10個交換する';
+    document.getElementById('prize10Btn').style.background = prize10Done ? '#C4B5FD' : '#9B59B6';
     document.getElementById('prize3Btn').style.display = currentStamps.length >= 3 ? 'inline-block' : 'none';
     document.getElementById('prize5Btn').style.display = currentStamps.length >= 5 ? 'inline-block' : 'none';
+    document.getElementById('prize8Btn').style.display = currentStamps.length >= 8 ? 'inline-block' : 'none';
+    document.getElementById('prize10Btn').style.display = currentStamps.length >= 10 ? 'inline-block' : 'none';
     document.getElementById('stampModal').className = 'modal open';
   }
 
@@ -302,7 +312,7 @@
 
   async function togglePrize(num) {
     if (!currentStamps.length) return;
-    const field = num === 3 ? 'prize_3' : 'prize_5';
+    const field = 'prize_' + num;
     const current = currentStamps.some(s => s[field]);
     await fetch(SUPABASE_URL + '/rest/v1/stamps?id=eq.' + currentStamps[0].id, {
       method: 'PATCH',
