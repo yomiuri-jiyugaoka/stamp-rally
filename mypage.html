@@ -1242,6 +1242,7 @@
     document.getElementById('exchangeModal').className = 'exchange-modal open';
     launchFireworks();
     showAchievementEffect(num);
+    playExchangeSound(num);
   }
 
   function showAchievementEffect(num) {
@@ -1270,6 +1271,33 @@
       animal.style.animation = 'animalExit 0.5s ease forwards';
       setTimeout(() => { animal.style.display = 'none'; animal.style.animation = ''; }, 500);
     }, 2000);
+  }
+
+  function playExchangeSound(num) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // 個数に応じて音を変える
+      const melodies = {
+        3:  [523, 659, 784, 1047],
+        5:  [523, 659, 784, 1047, 1319],
+        8:  [523, 659, 784, 1047, 1319, 1047, 1319, 1568],
+        10: [523, 659, 784, 1047, 1319, 1568, 1319, 1568, 2093, 2093],
+      };
+      const notes = melodies[num] || melodies[3];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'triangle';
+        const t = ctx.currentTime + i * 0.12;
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        osc.start(t);
+        osc.stop(t + 0.3);
+      });
+    } catch(e) {}
   }
 
   function launchFireworks() {
