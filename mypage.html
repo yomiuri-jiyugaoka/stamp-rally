@@ -362,7 +362,7 @@
 </div>
 
 <!-- ホーム画面追加モーダル -->
-<div id="addHomeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;padding:20px">
+<div id="addHomeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:20px">
   <div style="background:white;border-radius:24px;padding:24px;width:100%;max-width:360px">
     <div style="font-size:16px;font-weight:bold;text-align:center;color:#5A3A4A;margin-bottom:4px">🏠 ホーム画面に追加しよう</div>
     <div style="font-size:12px;color:#AAA;text-align:center;margin-bottom:16px">かんたんに開けるようになるよ！</div>
@@ -371,7 +371,7 @@
       <button id="tabAndroid" onclick="switchHomeTab('android')" style="flex:1;padding:8px;border:none;border-radius:10px;font-family:Kosugi Maru,sans-serif;font-size:13px;background:#F5F0FF;color:#9A8AB0;cursor:pointer">Android</button>
       <button id="tabPC" onclick="switchHomeTab('pc')" style="flex:1;padding:8px;border:none;border-radius:10px;font-family:Kosugi Maru,sans-serif;font-size:13px;background:#F5F0FF;color:#9A8AB0;cursor:pointer">PC</button>
     </div>
-    <div id="stepsIOS">
+    <div id="stepsIOS" style="display:none">
       <div style="display:flex;align-items:flex-start;gap:10px;background:#FFF5FB;border-radius:12px;padding:10px 12px;margin-bottom:8px">
         <div style="width:24px;height:24px;background:linear-gradient(135deg,#FFB3A0,#FF9B85);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white;flex-shrink:0">1</div>
         <div style="font-size:13px;color:#5A3A4A;line-height:1.5">画面下の <span style="color:#FF8C69;font-weight:bold">共有ボタン</span>（四角に↑）をタップ</div>
@@ -385,16 +385,7 @@
         <div style="font-size:13px;color:#5A3A4A;line-height:1.5">右上の <span style="color:#FF8C69;font-weight:bold">「追加」</span>をタップして完了！</div>
       </div>
     </div>
-    <div id="stepsPC" style="display:none">
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#FFF5FB;border-radius:12px;padding:10px 12px;margin-bottom:8px">
-        <div style="width:24px;height:24px;background:linear-gradient(135deg,#C9A8E8,#B090D8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white;flex-shrink:0">1</div>
-        <div style="font-size:13px;color:#5A3A4A;line-height:1.5">Windowsは <span style="color:#FF8C69;font-weight:bold">Ctrl + D</span> を押す<br>Macは <span style="color:#FF8C69;font-weight:bold">⌘ + D</span> を押す</div>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#FFF5FB;border-radius:12px;padding:10px 12px;margin-bottom:16px">
-        <div style="width:24px;height:24px;background:linear-gradient(135deg,#C9A8E8,#B090D8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white;flex-shrink:0">2</div>
-        <div style="font-size:13px;color:#5A3A4A;line-height:1.5"><span style="color:#FF8C69;font-weight:bold">「完了」</span>をクリックして保存！</div>
-      </div>
-    </div>
+    <div id="stepsAndroid" style="display:none">
       <div style="display:flex;align-items:flex-start;gap:10px;background:#FFF5FB;border-radius:12px;padding:10px 12px;margin-bottom:8px">
         <div style="width:24px;height:24px;background:linear-gradient(135deg,#A8E4E0,#7DCFCA);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white;flex-shrink:0">1</div>
         <div style="font-size:13px;color:#5A3A4A;line-height:1.5">右上の <span style="color:#FF8C69;font-weight:bold">メニュー（⋮）</span>をタップ</div>
@@ -406,6 +397,16 @@
       <div style="display:flex;align-items:flex-start;gap:10px;background:#FFF5FB;border-radius:12px;padding:10px 12px;margin-bottom:16px">
         <div style="width:24px;height:24px;background:linear-gradient(135deg,#A8E4E0,#7DCFCA);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white;flex-shrink:0">3</div>
         <div style="font-size:13px;color:#5A3A4A;line-height:1.5"><span style="color:#FF8C69;font-weight:bold">「追加」</span>をタップして完了！</div>
+      </div>
+    </div>
+    <div id="stepsPC" style="display:none">
+      <div style="display:flex;align-items:flex-start;gap:10px;background:#FFF5FB;border-radius:12px;padding:10px 12px;margin-bottom:8px">
+        <div style="width:24px;height:24px;background:linear-gradient(135deg,#C9A8E8,#B090D8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white;flex-shrink:0">1</div>
+        <div style="font-size:13px;color:#5A3A4A;line-height:1.5">Windowsは <span style="color:#FF8C69;font-weight:bold">Ctrl + D</span> を押す<br>Macは <span style="color:#FF8C69;font-weight:bold">⌘ + D</span> を押す</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;background:#FFF5FB;border-radius:12px;padding:10px 12px;margin-bottom:16px">
+        <div style="width:24px;height:24px;background:linear-gradient(135deg,#C9A8E8,#B090D8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white;flex-shrink:0">2</div>
+        <div style="font-size:13px;color:#5A3A4A;line-height:1.5"><span style="color:#FF8C69;font-weight:bold">「完了」</span>をクリックして保存！</div>
       </div>
     </div>
     <button onclick="document.getElementById('addHomeModal').style.display='none'" style="width:100%;padding:12px;background:#F5F0FF;border:none;border-radius:12px;font-family:Kosugi Maru,sans-serif;font-size:14px;color:#9A8AB0;cursor:pointer">とじる</button>
