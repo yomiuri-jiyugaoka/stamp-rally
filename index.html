@@ -183,7 +183,8 @@
         <label>本名（カタカナで入力）</label>
         <div class="input-wrap">
           <span class="input-icon">👤</span>
-          <input type="text" id="registerRealName" placeholder="例：ヤマダタロウ" autocomplete="off" onblur="toKatakana(this)" oncompositionend="toKatakana(this)">
+          <input type="text" id="registerRealName" placeholder="例：ヤマダタロウ" autocomplete="off" onblur="toKatakana(this)" oninput="toKatakana(this)" oncompositionend="toKatakana(this)">
+        <div id="realNameHint" style="display:none;background:#FFF0F8;border:1px solid #FFB8D0;color:#CC3366;padding:8px 12px;border-radius:10px;font-size:12px;margin-top:-10px;margin-bottom:10px">⚠️ カタカナで入力してね！（例：ヤマダタロウ）</div>
         </div>
         <div class="form-row">
           <div>
@@ -310,11 +311,9 @@
     // 送信前にカタカナ変換を実行
     const realNameInput = document.getElementById('registerRealName');
     toKatakana(realNameInput);
-    const convertedName = realNameInput.value.trim();
-    if (convertedName) {
-      document.getElementById('registerRealName').value = convertedName;
-    }
-    if (!/^[ァ-ヶー゠-ヿ\s　]+$/.test(realName)) { errorDiv.style.display = 'block'; errorDiv.textContent = '本名はカタカナで入力してね！（例：ヤマダタロウ）'; return; }
+    const realNameVal = realNameInput.value.trim();
+    if (!realNameVal) { errorDiv.style.display = 'block'; errorDiv.textContent = '本名をカタカナで入力してね！'; return; }
+    if (!/^[ァ-ヶーｦ-ﾟ\s　]+$/.test(realNameVal)) { errorDiv.style.display = 'block'; errorDiv.textContent = '本名はカタカナで入力してね！漢字やアルファベットは使えません（例：ヤマダタロウ）'; return; }
     if (!birthdate) { errorDiv.style.display = 'block'; errorDiv.textContent = '生年月日を入力してね！'; return; }
     if (!selectedGender) { errorDiv.style.display = 'block'; errorDiv.textContent = '性別を選んでね！'; return; }
     errorDiv.style.display = 'none'; loading.style.display = 'block';
