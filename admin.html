@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>管理者画面 - スタンプラリー</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
   :root { --primary: #FF8C69; --accent: #7DD5CC; --bg: #FFF5FB; --card: #FFFFFF; --text: #4A4A4A; --muted: #AAA; }
@@ -204,7 +205,8 @@
       <div class="section-title" style="margin-bottom:0">📝 日記一覧</div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-gray" onclick="loadDiaries()" style="margin-bottom:0;padding:8px 12px;font-size:12px">🔄 更新</button>
-        <button class="btn btn-accent" onclick="downloadAllDiaries()" style="margin-bottom:0;padding:8px 12px;font-size:12px">📥 全件DL</button>
+        <button class="btn btn-accent" onclick="downloadAllDiaries()" style="margin-bottom:0;padding:8px 12px;font-size:12px">📄 全件DL(HTML)</button>
+        <button class="btn" onclick="downloadAllDiariesJpg()" style="margin-bottom:0;padding:8px 12px;font-size:12px;background:#FF9B85;color:white">🖼️ 全件DL(JPG)</button>
       </div>
     </div>
     <div id="diaryAdminList"><div style="text-align:center;color:#AAA;padding:20px">読み込み中...</div></div>
@@ -245,6 +247,7 @@
   let courseMap = {};
   let allParticipants = {};
   let allCourses = {};
+  let allDiaries = {};
 
   function adminLogin() {
     if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
@@ -460,6 +463,7 @@
     const diaries = await dRes.json();
     participants.forEach(p => allParticipants[p.id] = p);
     courses.forEach(c => allCourses[c.course_code] = c.course_name);
+    diaries.forEach(d => allDiaries[d.id] = d);
 
     const list = document.getElementById('diaryAdminList');
     if (!diaries.length) { list.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">日記がありません</div>'; return; }
@@ -483,8 +487,140 @@
           '<textarea id="comment_' + d.id + '" style="min-height:60px;margin-bottom:6px" placeholder="コメントを入力...">' + (d.staff_comment || '') + '</textarea>' +
           '<button onclick="saveComment(' + d.id + ')" style="background:#48BB78;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-family:Kosugi Maru,sans-serif;cursor:pointer">💾 保存</button>' +
         '</div>' +
+        '<div style="margin-top:8px;display:flex;gap:6px">' +
+          '<button onclick="downloadSingleDiaryHtml(' + d.id + ')" style="background:#667EEA;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-family:Kosugi Maru,sans-serif;cursor:pointer">📄 HTML</button>' +
+          '<button onclick="downloadSingleDiaryJpg(' + d.id + ')" style="background:#FF9B85;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-family:Kosugi Maru,sans-serif;cursor:pointer">🖼️ JPG</button>' +
+        '</div>' +
       '</div>';
     }).join('');
+  }
+
+  // 絵日記風アート（管理者画面の個別・一括ダウンロード用）
+  function buildAdminDiaryEntryArt(courseName, diaryText, photoUrl, staffComment, dateStr) {
+    const BASE = 'https://yomiuri-jiyugaoka.github.io/stamp-rally/';
+    const commentHtml = staffComment
+      ? `<div style="display:flex;align-items:center;gap:8px;background:#EAFBF0;border-radius:14px;padding:10px 12px;margin-top:10px">
+           <img src="${BASE}yumekawa_animal_panda.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0">
+           <div style="font-size:13px;color:#2E7D52;line-height:1.5">${staffComment}</div>
+         </div>`
+      : '';
+    const photoHtml = photoUrl
+      ? `<div style="width:100%;height:200px;border-radius:12px;margin-bottom:10px;background-image:url('${photoUrl}');background-size:cover;background-position:center;border:2px solid #FFD8E8"></div>`
+      : '';
+    return `
+        <div style="background:white;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(200,150,180,0.15);margin-bottom:14px">
+          <p style="color:#D4537E;font-weight:bold;font-size:13px;margin:0 0 8px;background:#FFF0F6;display:inline-block;padding:4px 12px;border-radius:14px">📖 ${courseName}</p>
+          <p style="font-size:13px;line-height:1.8;color:#5A4A42;margin:8px 0 10px;white-space:pre-wrap">${(diaryText || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+          ${photoHtml}
+          ${commentHtml}
+          <p style="text-align:right;font-size:11px;color:#C0A890;margin:10px 0 0">${dateStr}</p>
+        </div>`;
+  }
+
+  function buildAdminDiaryArtWrapper(headerName, entriesHtml) {
+    const BASE = 'https://yomiuri-jiyugaoka.github.io/stamp-rally/';
+    return `
+      <div style="width:340px;background:linear-gradient(135deg,#FFE4F0 0%,#FFF4D0 50%,#E4F8FF 100%);border-radius:20px;padding:20px;font-family:'Hiragino Kaku Gothic Pro','メイリオ',sans-serif;position:relative;box-sizing:border-box">
+        <img src="${BASE}animal_melt1_cat.png" style="position:absolute;top:6px;left:6px;width:38px">
+        <img src="${BASE}animal_melt6_bear.png" style="position:absolute;top:6px;right:6px;width:38px">
+        <div style="display:flex;justify-content:center;margin-bottom:2px">
+          <img src="${BASE}enikki.png" style="width:60px;height:60px;object-fit:contain">
+        </div>
+        <p style="text-align:center;color:#C26B45;font-weight:bold;font-size:17px;margin:6px 0 2px">${headerName}</p>
+        <p style="text-align:center;color:#B89A7A;font-size:11px;margin:0 0 14px">よみうりカルチャー自由が丘 2026年 夏</p>
+        ${entriesHtml}
+        <img src="${BASE}animal_melt3_rabbit.png" style="position:absolute;bottom:6px;left:6px;width:34px">
+        <img src="${BASE}animal_melt5_penguin.png" style="position:absolute;bottom:6px;right:6px;width:34px">
+      </div>`;
+  }
+
+  async function renderAdminArtToJpg(innerHtml, filename) {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '-9999px';
+    wrapper.style.top = '0';
+    wrapper.innerHTML = innerHtml;
+    document.body.appendChild(wrapper);
+
+    const imgs = wrapper.querySelectorAll('img');
+    await Promise.all(Array.from(imgs).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+    }));
+
+    const canvas = await html2canvas(wrapper.firstElementChild, { scale: 2, useCORS: true, backgroundColor: null });
+    document.body.removeChild(wrapper);
+
+    return new Promise(resolve => {
+      canvas.toBlob(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        resolve();
+      }, 'image/jpeg', 0.92);
+    });
+  }
+
+  function downloadSingleDiaryHtml(diaryId) {
+    const d = allDiaries[diaryId];
+    if (!d) return;
+    const p = allParticipants[d.participant_id] || {};
+    const courseName = allCourses[d.course_code] || d.course_code;
+    const date = new Date(d.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+    const photos = [d.photo_url, d.photo_url2, d.photo_url3].filter(Boolean);
+    let photoHtml = '';
+    if (photos.length === 1) {
+      photoHtml = `<img src="${photos[0]}" style="width:100%;border-radius:8px;margin-top:12px;object-fit:contain;background:#f0f0f0">`;
+    } else if (photos.length >= 2) {
+      photoHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:12px">${photos.map(u => `<img src="${u}" style="width:100%;border-radius:6px;height:200px;object-fit:contain;background:#f0f0f0">`).join('')}</div>`;
+    }
+    const commentHtml = d.staff_comment
+      ? `<div style="background:#F0FFF4;border-left:4px solid #8FD5A6;border-radius:0 14px 14px 0;padding:12px 14px;margin-top:10px"><div style="font-size:11px;color:#48BB78;font-weight:bold;margin-bottom:4px">💬 スタッフより</div><div style="font-size:14px;color:#276749;line-height:1.6">${d.staff_comment}</div></div>`
+      : '';
+    const html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>${p.nickname || ''}さんの日記</title>
+<style>
+  body { font-family: 'Hiragino Kaku Gothic Pro', 'メイリオ', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background: #FFF9F0; }
+  h1 { color: #FF6B35; text-align: center; font-size: 24px; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 32px; font-size: 13px; }
+  .diary { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .course { color: #FF6B35; font-weight: bold; font-size: 15px; margin-bottom: 12px; }
+  .text { font-size: 15px; line-height: 1.8; color: #2D2D2D; white-space: pre-wrap; }
+  .date { font-size: 12px; color: #888; margin-top: 12px; text-align: right; }
+</style>
+</head>
+<body>
+<h1>🎪 ${p.nickname || ''}さんのなつやすみ日記</h1>
+<div class="subtitle">よみうりカルチャー自由が丘 2026年 夏</div>
+<div class="diary">
+  <div class="course">📖 ${courseName}</div>
+  <div class="text">${(d.diary_text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+  ${photoHtml}
+  ${commentHtml}
+  <div class="date">${date}</div>
+</div>
+</body></html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (p.nickname || '日記') + 'の日記_' + courseName + '.html';
+    a.click();
+  }
+
+  async function downloadSingleDiaryJpg(diaryId) {
+    const d = allDiaries[diaryId];
+    if (!d) return;
+    const p = allParticipants[d.participant_id] || {};
+    const courseName = allCourses[d.course_code] || d.course_code;
+    const date = new Date(d.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+    const firstPhoto = d.photo_url || d.photo_url2 || d.photo_url3 || null;
+    const entryHtml = buildAdminDiaryEntryArt(courseName, d.diary_text, firstPhoto, d.staff_comment, date);
+    const art = buildAdminDiaryArtWrapper((p.nickname || '?') + 'さんの日記', entryHtml);
+    await renderAdminArtToJpg(art, (p.nickname || '日記') + 'の日記_' + courseName + '.jpg');
   }
 
   async function downloadAllDiaries() {
@@ -576,6 +712,54 @@
     a.download = 'なつやすみ日記まとめ_' + new Date().toLocaleDateString('ja-JP').replace(/\//g,'-') + '.html';
     a.click();
     setTimeout(() => alert('ダウンロードしました！\nブラウザで開いて印刷、またはWordにコピーして編集できます。'), 500);
+  }
+
+  async function downloadAllDiariesJpg() {
+    const [pRes, cRes, dRes] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/participants?select=id,nickname,real_name',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }),
+      fetch(SUPABASE_URL + '/rest/v1/courses?select=course_code,course_name',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }),
+      fetch(SUPABASE_URL + '/rest/v1/diaries?select=*&order=participant_id.asc,created_at.asc',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } })
+    ]);
+    const participants = await pRes.json();
+    const courses = await cRes.json();
+    const diaries = await dRes.json();
+
+    const pMap = {};
+    participants.forEach(p => pMap[p.id] = p);
+    const cMap = {};
+    courses.forEach(c => cMap[c.course_code] = c.course_name);
+
+    const grouped = {};
+    diaries.forEach(d => {
+      if (!grouped[d.participant_id]) grouped[d.participant_id] = [];
+      grouped[d.participant_id].push(d);
+    });
+
+    const pids = Object.keys(grouped);
+    if (pids.length === 0) {
+      alert('日記がありません');
+      return;
+    }
+
+    alert(pids.length + '人分の画像を順番にダウンロードします。少し時間がかかります。');
+
+    for (const pid of pids) {
+      const p = pMap[pid] || { nickname: '?', real_name: '?' };
+      const entries = grouped[pid];
+      const entriesHtml = entries.map(d => {
+        const date = new Date(d.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+        const courseName = cMap[d.course_code] || d.course_code;
+        const firstPhoto = d.photo_url || d.photo_url2 || d.photo_url3 || null;
+        return buildAdminDiaryEntryArt(courseName, d.diary_text, firstPhoto, d.staff_comment, date);
+      }).join('');
+      const art = buildAdminDiaryArtWrapper(p.nickname + 'さんのなつやすみ日記', entriesHtml);
+      await renderAdminArtToJpg(art, p.nickname + 'さんの日記まとめ.jpg');
+      // ブラウザのダウンロード処理に余裕を持たせる
+      await new Promise(resolve => setTimeout(resolve, 400));
+    }
   }
 
   async function saveComment(diaryId) {
