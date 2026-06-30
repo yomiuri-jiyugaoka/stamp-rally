@@ -1130,6 +1130,13 @@
     if (!course) { alert('講座が選ばれていません。もう一度開いてね！'); return; }
     if (!text && compressedImages.length === 0 && existingPhotoUrls.length === 0) { alert('日記の文章か写真のどちらかを入れてね！'); return; }
 
+    // ボタンを押した瞬間にローディング表示（無反応に見えないように）
+    const saveBtn = document.getElementById('diarySaveBtn');
+    const originalBtnText = saveBtn.textContent;
+    saveBtn.textContent = '⏳ ほぞんちゅう...';
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = '0.7';
+
     // Cloudflare Workers経由で新しい写真をR2にアップロード
     const newPhotoUrls = [];
     for (let i = 0; i < compressedImages.length; i++) {
@@ -1181,10 +1188,16 @@
       });
     }
 
+    saveBtn.textContent = originalBtnText;
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+
     if (res.ok) {
+      // 保存が終わった時点ですぐにモーダルを閉じて演出を出す
+      // 裏側のデータ再取得（init）は通知を待たせない
       closeDiaryModal();
       showSaveEffect();
-      await init();
+      init();
     } else {
       errorMsg.style.display = 'block';
     }
