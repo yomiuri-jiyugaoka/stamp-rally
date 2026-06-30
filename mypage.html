@@ -933,6 +933,7 @@
   function openDiaryModal(courseCode) {
     currentDiaryCourse = courseCode;
     compressedImages = [];
+    isSavingDiary = false;
     document.getElementById('diaryModalCourseName').textContent = '📖 ' + (courseMap[courseCode] || courseCode);
     document.getElementById('successMsg').style.display = 'none';
     document.getElementById('errorMsg').style.display = 'none';
@@ -1120,7 +1121,10 @@
     }
   }
 
+  let isSavingDiary = false;
+
   async function saveDiary() {
+    if (isSavingDiary) return;
     const course = currentDiaryCourse;
     const text = document.getElementById('diaryText').value.trim();
     const successMsg = document.getElementById('successMsg');
@@ -1130,12 +1134,14 @@
     if (!course) { alert('講座が選ばれていません。もう一度開いてね！'); return; }
     if (!text && compressedImages.length === 0 && existingPhotoUrls.length === 0) { alert('日記の文章か写真のどちらかを入れてね！'); return; }
 
-    // ボタンを押した瞬間にローディング表示（無反応に見えないように）
+    // 二重送信防止＋ボタンを押した瞬間にローディング表示
+    isSavingDiary = true;
     const saveBtn = document.getElementById('diarySaveBtn');
     const originalBtnText = saveBtn.textContent;
     saveBtn.textContent = '⏳ ほぞんちゅう...';
     saveBtn.disabled = true;
     saveBtn.style.opacity = '0.7';
+    saveBtn.style.pointerEvents = 'none';
 
     // Cloudflare Workers経由で新しい写真をR2にアップロード
     const newPhotoUrls = [];
@@ -1191,6 +1197,8 @@
     saveBtn.textContent = originalBtnText;
     saveBtn.disabled = false;
     saveBtn.style.opacity = '1';
+    saveBtn.style.pointerEvents = '';
+    isSavingDiary = false;
 
     if (res.ok) {
       // 保存が終わった時点ですぐにモーダルを閉じて演出を出す
