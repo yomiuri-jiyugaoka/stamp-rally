@@ -46,6 +46,11 @@
   .success-text { font-size: 22px; font-weight: bold; color: white; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
   .success-sub { font-size: 16px; color: rgba(255,255,255,0.95); margin-top: 8px; text-align: center; }
   .error-msg { background: #FFF0F8; border: 1px solid #FFB8D0; color: #CC3366; padding: 10px 14px; border-radius: 12px; font-size: 13px; margin-top: 8px; display: none; }
+  .search-mode-btn { flex: 1; padding: 8px; border: 1.5px solid #E8D8F8; border-radius: 12px; background: white; color: #9A8AB0; font-family: 'Kosugi Maru', sans-serif; font-size: 12px; cursor: pointer; }
+  .search-mode-btn.active { background: linear-gradient(135deg, #FFB3A0, #FF9B85); color: white; border-color: transparent; }
+  .match-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+  .match-badge.nickname { background: #FFF0F8; color: #D490B8; }
+  .match-badge.realname { background: #E8F8F0; color: #3A7A50; }
   .admin-btn { background: #F5F0FF; border: none; border-radius: 10px; padding: 6px 12px; color: #9A8AB0; font-family: 'Kosugi Maru', sans-serif; cursor: pointer; font-size: 12px; }
 </style>
 </head>
@@ -61,6 +66,11 @@
 
 <div class="card">
   <div class="section-title">🔍 参加者を探す</div>
+  <div style="display:flex;gap:6px;margin-bottom:10px" id="searchModeToggle">
+    <button class="search-mode-btn active" data-mode="both" onclick="setSearchMode('both')">両方</button>
+    <button class="search-mode-btn" data-mode="nickname" onclick="setSearchMode('nickname')">ニックネーム</button>
+    <button class="search-mode-btn" data-mode="realname" onclick="setSearchMode('realname')">本名</button>
+  </div>
   <input type="text" id="searchInput" placeholder="名前で検索（ひらがな・カタカナ・漢字）" oninput="searchParticipants()">
   <div class="search-results" id="searchResults"></div>
   <div class="error-msg" id="errorMsg">見つかりませんでした 😢</div>
@@ -121,6 +131,15 @@
     return str.replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
   }
 
+  let searchMode = 'both';
+  function setSearchMode(mode) {
+    searchMode = mode;
+    document.querySelectorAll('.search-mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    searchParticipants();
+  }
+
   async function searchParticipants() {
     const rawQuery = document.getElementById('searchInput').value.trim();
     const resultsDiv = document.getElementById('searchResults');
@@ -130,8 +149,16 @@
     searchTimer = setTimeout(async () => {
       // ひらがな入力をカタカナに変換し、本名（カタカナ）とニックネーム（原文）の両方で検索
       const katakanaQuery = toKatakanaQuery(rawQuery);
+      let filter;
+      if (searchMode === 'nickname') {
+        filter = `nickname.ilike.*${rawQuery}*,nickname.ilike.*${katakanaQuery}*`;
+      } else if (searchMode === 'realname') {
+        filter = `real_name.ilike.*${katakanaQuery}*`;
+      } else {
+        filter = `real_name.ilike.*${katakanaQuery}*,nickname.ilike.*${rawQuery}*,nickname.ilike.*${katakanaQuery}*`;
+      }
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/participants?or=(real_name.ilike.*${katakanaQuery}*,nickname.ilike.*${rawQuery}*,nickname.ilike.*${katakanaQuery}*)&select=*`,
+        `${SUPABASE_URL}/rest/v1/participants?or=(${filter})&select=*`,
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
       const data = await res.json();
       if (!data || data.length === 0) { resultsDiv.innerHTML = ''; errorMsg.style.display = 'block'; return; }
@@ -142,14 +169,22 @@
       const stampMap = {};
       stamps.forEach(s => stampMap[s.participant_id] = (stampMap[s.participant_id] || 0) + 1);
       const countLabel = data.length > 1 ? `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">${data.length}件見つかりました</div>` : '';
-      resultsDiv.innerHTML = countLabel + data.map(p => `
+      resultsDiv.innerHTML = countLabel + data.map(p => {
+        const nicknameMatch = p.nickname.includes(rawQuery) || p.nickname.includes(katakanaQuery);
+        const realnameMatch = p.real_name.includes(katakanaQuery);
+        let badge = '';
+        if (nicknameMatch && realnameMatch) badge = '<span class="match-badge nickname">ニックネーム</span><span class="match-badge realname">本名</span>';
+        else if (nicknameMatch) badge = '<span class="match-badge nickname">ニックネーム一致</span>';
+        else if (realnameMatch) badge = '<span class="match-badge realname">本名一致</span>';
+        return `
         <div class="result-item" onclick="selectParticipant(${p.id}, '${p.nickname}', '${p.real_name}', ${stampMap[p.id] || 0})">
           <div>
-            <div class="result-name">${p.nickname} さん</div>
+            <div class="result-name">${p.nickname} さん${badge}</div>
             <div class="result-sub">${p.real_name}</div>
           </div>
           <div class="result-stamps">🌟${stampMap[p.id] || 0}</div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }, 300);
   }
 

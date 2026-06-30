@@ -42,6 +42,12 @@
   .panel { display: none; }
   .panel.active { display: block; }
   .success-msg { background: #F0FFF4; border: 1px solid #9AE6B4; color: #276749; padding: 8px 12px; border-radius: 8px; font-size: 13px; margin-top: 8px; display: none; }
+  .error-msg { background: #FFF0F8; border: 1px solid #FFB8D0; color: #CC3366; padding: 10px 14px; border-radius: 12px; font-size: 13px; margin-top: 8px; display: none; }
+  .reception-search-mode-btn { flex: 1; padding: 8px; border: 1.5px solid #E8D8F8; border-radius: 12px; background: white; color: #9A8AB0; font-family: 'Kosugi Maru', sans-serif; font-size: 12px; cursor: pointer; }
+  .reception-search-mode-btn.active { background: linear-gradient(135deg, #FFB3A0, #FF9B85); color: white; border-color: transparent; }
+  .match-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+  .match-badge.nickname { background: #FFF0F8; color: #D490B8; }
+  .match-badge.realname { background: #E8F8F0; color: #3A7A50; }
   .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #FFF0F8, #F0F8FF); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
   .login-box { background: white; border-radius: 28px; padding: 32px; width: 100%; max-width: 360px; box-shadow: 0 8px 32px rgba(200,150,220,0.15); text-align: center; border: 2px solid rgba(200,160,220,0.15); }
   .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
@@ -126,6 +132,11 @@
 <div class="panel active" id="panel-reception">
   <div class="card">
     <div class="section-title">🔍 参加者を探す</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px" id="receptionSearchModeToggle">
+      <button class="reception-search-mode-btn active" data-mode="both" onclick="setReceptionSearchMode('both')">両方</button>
+      <button class="reception-search-mode-btn" data-mode="nickname" onclick="setReceptionSearchMode('nickname')">ニックネーム</button>
+      <button class="reception-search-mode-btn" data-mode="realname" onclick="setReceptionSearchMode('realname')">本名</button>
+    </div>
     <input type="text" id="receptionSearchInput" placeholder="名前で検索（ひらがな・カタカナ・漢字）" oninput="receptionSearch()">
     <div id="receptionSearchResults" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
     <div class="error-msg" id="receptionErrorMsg" style="display:none">見つかりませんでした 😢</div>
@@ -648,6 +659,15 @@
     });
   }
 
+  let receptionSearchMode = 'both';
+  function setReceptionSearchMode(mode) {
+    receptionSearchMode = mode;
+    document.querySelectorAll('.reception-search-mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    receptionSearch();
+  }
+
   async function receptionSearch() {
     const rawQuery = document.getElementById('receptionSearchInput').value.trim();
     const resultsDiv = document.getElementById('receptionSearchResults');
@@ -656,8 +676,16 @@
     clearTimeout(receptionSearchTimer);
     receptionSearchTimer = setTimeout(async () => {
       const katakanaQuery = toKatakanaQuery(rawQuery);
+      let filter;
+      if (receptionSearchMode === 'nickname') {
+        filter = `nickname.ilike.*${rawQuery}*,nickname.ilike.*${katakanaQuery}*`;
+      } else if (receptionSearchMode === 'realname') {
+        filter = `real_name.ilike.*${katakanaQuery}*`;
+      } else {
+        filter = `real_name.ilike.*${katakanaQuery}*,nickname.ilike.*${rawQuery}*,nickname.ilike.*${katakanaQuery}*`;
+      }
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/participants?or=(real_name.ilike.*${katakanaQuery}*,nickname.ilike.*${rawQuery}*,nickname.ilike.*${katakanaQuery}*)&select=*`,
+        `${SUPABASE_URL}/rest/v1/participants?or=(${filter})&select=*`,
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
       const data = await res.json();
       if (!data || data.length === 0) { resultsDiv.innerHTML = ''; errorMsg.style.display = 'block'; return; }
@@ -668,14 +696,22 @@
       const stampMap = {};
       stamps.forEach(s => stampMap[s.participant_id] = (stampMap[s.participant_id] || 0) + 1);
       const countLabel = data.length > 1 ? `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">${data.length}件見つかりました</div>` : '';
-      resultsDiv.innerHTML = countLabel + data.map(p => `
+      resultsDiv.innerHTML = countLabel + data.map(p => {
+        const nicknameMatch = p.nickname.includes(rawQuery) || p.nickname.includes(katakanaQuery);
+        const realnameMatch = p.real_name.includes(katakanaQuery);
+        let badge = '';
+        if (nicknameMatch && realnameMatch) badge = '<span class="match-badge nickname">ニックネーム</span><span class="match-badge realname">本名</span>';
+        else if (nicknameMatch) badge = '<span class="match-badge nickname">ニックネーム一致</span>';
+        else if (realnameMatch) badge = '<span class="match-badge realname">本名一致</span>';
+        return `
         <div style="background:#FAF5FF;border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border:1.5px solid #E8D8F8" onclick="receptionSelectParticipant(${p.id}, '${p.nickname}', '${p.real_name}', ${stampMap[p.id] || 0})">
           <div>
-            <div style="font-size:16px;font-weight:bold;color:var(--text)">${p.nickname} さん</div>
+            <div style="font-size:16px;font-weight:bold;color:var(--text)">${p.nickname} さん${badge}</div>
             <div style="font-size:12px;color:var(--muted);margin-top:2px">${p.real_name}</div>
           </div>
           <div style="font-size:18px;font-weight:bold;color:var(--primary);background:#FFF0F8;border-radius:20px;padding:4px 12px">🌟${stampMap[p.id] || 0}</div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }, 300);
   }
 
