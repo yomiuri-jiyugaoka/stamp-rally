@@ -123,6 +123,7 @@
   <button class="tab active" onclick="switchTab('reception')">🎯 受付</button>
   <button class="tab" onclick="switchTab('participants')">参加者一覧</button>
   <button class="tab" onclick="switchTab('add')">参加者追加</button>
+  <button class="tab" onclick="switchTab('courses')">📚 講座追加</button>
   <button class="tab" onclick="switchTab('diaries')">日記管理</button>
   <button class="tab" onclick="switchTab('qr')">講座QR印刷</button>
   <button class="tab" onclick="switchTab('export')">CSV出力</button>
@@ -181,7 +182,9 @@
     <button class="btn btn-primary btn-full" onclick="addParticipant()">➕ 追加する</button>
     <div class="success-msg" id="addSuccess">追加しました！</div>
   </div>
+</div>
 
+<div class="panel" id="panel-courses">
   <div class="card">
     <div class="section-title">📚 講座（クラス）を追加</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:12px">増設クラスなど新しい講座を追加するときに使います</p>
@@ -258,7 +261,7 @@
 
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach((t, i) => {
-      const names = ['reception', 'participants', 'add', 'diaries', 'qr', 'export'];
+      const names = ['reception', 'participants', 'add', 'courses', 'diaries', 'qr', 'export'];
       t.className = 'tab' + (names[i] === tab ? ' active' : '');
     });
     document.querySelectorAll('.panel').forEach(p => p.className = 'panel');
