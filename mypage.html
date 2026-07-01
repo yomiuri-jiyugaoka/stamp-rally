@@ -903,6 +903,7 @@
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/panda-comment`, {
         method: 'POST',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${SUPABASE_KEY}`,
