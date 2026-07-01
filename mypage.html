@@ -466,7 +466,7 @@
   <div class="card welcome-card">
     <div style="display:flex;align-items:center;justify-content:center;gap:0">
       <div style="position:relative;margin-right:6px">
-        <div id="pandaSpeechBubble" style="background:white;border-radius:16px;padding:5px 10px;font-size:12px;font-weight:bold;color:#5A3A4A;white-space:normal;line-height:1.4;box-shadow:0 3px 10px rgba(0,0,0,0.12);max-width:170px">
+        <div id="pandaSpeechBubble" style="background:white;border-radius:16px;padding:9px 14px;font-size:12px;font-weight:bold;color:#5A3A4A;white-space:normal;line-height:1.4;box-shadow:0 3px 10px rgba(0,0,0,0.12);max-width:170px">
           おはよう！🌟
         </div>
         <div style="position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:8px solid white"></div>
@@ -623,7 +623,18 @@
 
     document.getElementById('userName').textContent = participants[0].nickname;
     window._participantNickname = participants[0].nickname;
-    window._participantGender = participants[0].gender;
+
+    // 生年月日から年齢を計算
+    if (participants[0].birthdate) {
+      const birth = new Date(participants[0].birthdate);
+      const today = new Date();
+      let age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+      window._participantAge = age;
+    } else {
+      window._participantAge = null;
+    }
 
     const [sRes, cRes, dRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${participantId}&select=*&order=stamped_at.asc`,
@@ -872,7 +883,7 @@
     const bubble = document.getElementById('pandaSpeechBubble');
     if (!bubble) return;
 
-    // フォールバック用の固定メッセージ
+    // フォールバック用の固定メッセージ（即座に表示）
     const fallback = (() => {
       if (count === 0) return '今年の夏もがんばるぱんだ！🐼';
       if (count >= 10 && p10) return 'チャンピオンだぱんだ！🌟';
@@ -886,19 +897,20 @@
       return 'あと' + (3 - count) + '個でプレゼントぱんだ！🎉';
     })();
 
-    bubble.textContent = ' ';
+    bubble.textContent = fallback;
 
-    // Geminiパンダコメントを非同期で取得して表示
+    // Geminiパンダコメントを非同期で取得して差し替え
     try {
-      const res = await fetch('https://gyosai-panda-api.vercel.app/api/panda-comment', {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/panda-comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
         },
         body: JSON.stringify({
           count, p3, p5, p8, p10,
           nickname: window._participantNickname || 'お友達',
-          gender: window._participantGender || null,
+          age: window._participantAge || null,
         }),
       });
       if (res.ok) {
