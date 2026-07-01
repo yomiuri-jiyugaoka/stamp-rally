@@ -49,6 +49,7 @@
   }
   .welcome-deco { font-size: 48px; margin-bottom: 8px; display: block; animation: welcomeFloat 3s ease-in-out infinite; }
   @keyframes welcomeFloat { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-8px) rotate(3deg)} }
+  @keyframes goldenPulse { from{box-shadow:0 0 12px 3px rgba(255,215,0,0.6)} to{box-shadow:0 0 22px 8px rgba(255,215,0,0.95)} }
   .welcome-name { font-size: 26px; font-weight: bold; color: #5A3A4A; text-shadow: 0 1px 2px rgba(255,255,255,0.5); }
   .welcome-sub { font-size: 13px; color: rgba(90,58,74,0.8); margin-top: 4px; }
   .welcome-stars { font-size: 20px; margin-top: 8px; letter-spacing: 4px; }
@@ -918,6 +919,12 @@
       if (res.ok) {
         const data = await res.json();
         if (data.comment) {
+          if (data.isGolden) {
+            bubble.style.background = 'linear-gradient(135deg, #FFD700, #FFF176)';
+            bubble.style.color = '#7A5500';
+            bubble.style.boxShadow = '0 0 16px 4px rgba(255,215,0,0.7)';
+            bubble.style.animation = 'goldenPulse 1s ease-in-out infinite alternate';
+          }
           bubble.textContent = '';
           const chars = [...data.comment];
           let i = 0;
