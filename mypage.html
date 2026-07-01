@@ -917,7 +917,15 @@
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.comment) bubble.textContent = data.comment;
+        if (data.comment) {
+          bubble.textContent = '';
+          const chars = [...data.comment];
+          let i = 0;
+          const timer = setInterval(() => {
+            bubble.textContent += chars[i++];
+            if (i >= chars.length) clearInterval(timer);
+          }, 60);
+        }
       }
     } catch (e) {
       // フォールバックのまま表示継続
