@@ -883,7 +883,7 @@
     const bubble = document.getElementById('pandaSpeechBubble');
     if (!bubble) return;
 
-    // フォールバック用の固定メッセージ（即座に表示）
+    // フォールバック用の固定メッセージ
     const fallback = (() => {
       if (count === 0) return '今年の夏もがんばるぱんだ！🐼';
       if (count >= 10 && p10) return 'チャンピオンだぱんだ！🌟';
