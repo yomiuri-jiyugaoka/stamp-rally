@@ -623,6 +623,7 @@
 
     document.getElementById('userName').textContent = participants[0].nickname;
     window._participantNickname = participants[0].nickname;
+    window._participantGender = participants[0].gender;
 
     const [sRes, cRes, dRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${participantId}&select=*&order=stamped_at.asc`,
@@ -897,6 +898,7 @@
         body: JSON.stringify({
           count, p3, p5, p8, p10,
           nickname: window._participantNickname || 'お友達',
+          gender: window._participantGender || null,
         }),
       });
       if (res.ok) {
