@@ -885,9 +885,9 @@
       return 'あと' + (3 - count) + '個でプレゼントぱんだ！🎉';
     })();
 
-    bubble.textContent = fallback;
+    bubble.textContent = '';
 
-    // Geminiパンダコメントを非同期で取得して差し替え
+    // Geminiパンダコメントを非同期で取得して表示
     try {
       const res = await fetch('https://gyosai-panda-api.vercel.app/api/panda-comment', {
         method: 'POST',
