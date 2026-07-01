@@ -162,6 +162,7 @@
       <div class="section-title" style="margin-bottom:0">👥 参加者一覧</div>
       <button class="btn btn-gray" onclick="loadParticipants()">🔄 更新</button>
     </div>
+    <input type="text" id="participantSearchInput" placeholder="🔍 ニックネーム・本名で絞り込み" oninput="filterParticipants()" style="margin-bottom:10px">
     <p style="font-size:12px;color:var(--muted);margin-bottom:12px">名前をタップするとスタンプ詳細・削除・プレゼント交換ができます</p>
     <div style="overflow-x:auto">
       <table>
@@ -311,6 +312,11 @@
     courses.forEach(c => courseMap[c.course_code] = c.course_name);
   }
 
+  let allParticipantsData = [];
+  let participantStampMap = {};
+  let participantPrize3Map = {};
+  let participantPrize5Map = {};
+
   async function loadParticipants() {
     const [pRes, sRes] = await Promise.all([
       fetch(SUPABASE_URL + '/rest/v1/participants?select=*&order=id.asc',
@@ -320,38 +326,58 @@
     ]);
     const participants = await pRes.json();
     const stamps = await sRes.json();
-    const stampMap = {};
-    const prize3Map = {};
-    const prize5Map = {};
+    participantStampMap = {};
+    participantPrize3Map = {};
+    participantPrize5Map = {};
     stamps.forEach(s => {
-      stampMap[s.participant_id] = (stampMap[s.participant_id] || 0) + 1;
-      if (s.prize_3) prize3Map[s.participant_id] = true;
-      if (s.prize_5) prize5Map[s.participant_id] = true;
+      participantStampMap[s.participant_id] = (participantStampMap[s.participant_id] || 0) + 1;
+      if (s.prize_3) participantPrize3Map[s.participant_id] = true;
+      if (s.prize_5) participantPrize5Map[s.participant_id] = true;
     });
 
+    allParticipantsData = participants;
+    renderParticipantTable(participants);
+  }
+
+  function filterParticipants() {
+    const query = document.getElementById('participantSearchInput').value.trim();
+    const katakana = query.replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
+    if (!query) {
+      renderParticipantTable(allParticipantsData);
+      return;
+    }
+    const filtered = allParticipantsData.filter(p =>
+      p.nickname.includes(query) || p.nickname.includes(katakana) ||
+      p.real_name.includes(query) || p.real_name.includes(katakana)
+    );
+    renderParticipantTable(filtered);
+  }
+
+  function renderParticipantTable(participants) {
     const tbody = document.getElementById('participantTable');
     if (!participants.length) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#AAA;padding:20px">参加者がいません</td></tr>';
-    } else {
-      tbody.innerHTML = participants.map(p => {
-        const count = stampMap[p.id] || 0;
-        let badges = '<span class="stamp-badge">' + count + '個</span>';
-        if (prize3Map[p.id]) badges += '<span class="prize-badge prize-3">🎁交換済</span>';
-        if (prize5Map[p.id]) badges += '<span class="prize-badge prize-5">🏆交換済</span>';
-        return '<tr>' +
-          '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + p.nickname + '</td>' +
-          '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + p.real_name + '</td>' +
-          '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + badges + '</td>' +
-          '<td><button onclick="event.stopPropagation();deleteParticipant(' + p.id + ', \'' + p.nickname + '\')" style="background:#FFF0F0;color:#CC3333;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-family:Kosugi Maru,sans-serif;cursor:pointer">🗑️ 削除</button></td>' +
-          '</tr>';
-      }).join('');
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#AAA;padding:20px">見つかりません</td></tr>';
+      return;
     }
+    tbody.innerHTML = participants.map(p => {
+      const count = participantStampMap[p.id] || 0;
+      let badges = '<span class="stamp-badge">' + count + '個</span>';
+      if (participantPrize3Map[p.id]) badges += '<span class="prize-badge prize-3">🎁交換済</span>';
+      if (participantPrize5Map[p.id]) badges += '<span class="prize-badge prize-5">🏆交換済</span>';
+      return '<tr>' +
+        '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + p.nickname + '</td>' +
+        '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + p.real_name + '</td>' +
+        '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + badges + '</td>' +
+        '<td><button onclick="event.stopPropagation();deleteParticipant(' + p.id + ', \'' + p.nickname + '\')" style="background:#FFF0F0;color:#CC3333;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-family:Kosugi Maru,sans-serif;cursor:pointer">🗑️ 削除</button></td>' +
+        '</tr>';
+    }).join('');
 
-    const prizeCount = participants.filter(p => (stampMap[p.id] || 0) >= 3).length;
-    document.getElementById('statTotal').textContent = participants.length;
-    document.getElementById('statStamps').textContent = stamps.length;
+    const prizeCount = allParticipantsData.filter(p => (participantStampMap[p.id] || 0) >= 3).length;
+    document.getElementById('statTotal').textContent = allParticipantsData.length;
+    document.getElementById('statStamps').textContent = Object.values(participantStampMap).reduce((a, b) => a + b, 0);
     document.getElementById('statPrize').textContent = prizeCount;
   }
+
 
   async function openStampModal(participantId, nickname) {
     currentParticipantId = participantId;
