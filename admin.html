@@ -37,6 +37,8 @@
   .prize-badge { display: inline-block; border-radius: 20px; padding: 2px 8px; font-size: 11px; margin-left: 4px; }
   .prize-3 { background: #FFF3CD; color: #856404; }
   .prize-5 { background: #D1ECF1; color: #0C5460; }
+  .prize-8 { background: #FFD6EC; color: #8B1A5A; }
+  .prize-10 { background: #E8D5F8; color: #5A2A7C; }
   .tab-group { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
   .tab { padding: 8px 14px; border: none; border-radius: 10px; font-size: 13px; font-family: 'Kosugi Maru', sans-serif; cursor: pointer; background: #F5F0FF; color: #9A8AB0; white-space: nowrap; border: 1px solid #E8D8F8; }
   .tab.active { background: linear-gradient(135deg, #FFB3A0, #FF9B85); color: white; border-color: transparent; }
@@ -316,6 +318,8 @@
   let participantStampMap = {};
   let participantPrize3Map = {};
   let participantPrize5Map = {};
+  let participantPrize8Map = {};
+  let participantPrize10Map = {};
 
   async function loadParticipants() {
     const [pRes, sRes] = await Promise.all([
@@ -329,10 +333,14 @@
     participantStampMap = {};
     participantPrize3Map = {};
     participantPrize5Map = {};
+    participantPrize8Map = {};
+    participantPrize10Map = {};
     stamps.forEach(s => {
       participantStampMap[s.participant_id] = (participantStampMap[s.participant_id] || 0) + 1;
       if (s.prize_3) participantPrize3Map[s.participant_id] = true;
       if (s.prize_5) participantPrize5Map[s.participant_id] = true;
+      if (s.prize_8) participantPrize8Map[s.participant_id] = true;
+      if (s.prize_10) participantPrize10Map[s.participant_id] = true;
     });
 
     allParticipantsData = participants;
@@ -364,6 +372,8 @@
       let badges = '<span class="stamp-badge">' + count + '個</span>';
       if (participantPrize3Map[p.id]) badges += '<span class="prize-badge prize-3">🎁交換済</span>';
       if (participantPrize5Map[p.id]) badges += '<span class="prize-badge prize-5">🏆交換済</span>';
+      if (participantPrize8Map[p.id]) badges += '<span class="prize-badge prize-8">💎交換済</span>';
+      if (participantPrize10Map[p.id]) badges += '<span class="prize-badge prize-10">👑交換済</span>';
       return '<tr>' +
         '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + p.nickname + '</td>' +
         '<td style="cursor:pointer" onclick="openStampModal(' + p.id + ', \'' + p.nickname + '\')">' + p.real_name + '</td>' +
