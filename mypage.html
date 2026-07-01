@@ -624,6 +624,18 @@
     document.getElementById('userName').textContent = participants[0].nickname;
     window._participantNickname = participants[0].nickname;
 
+    // 生年月日から年齢を計算
+    if (participants[0].birthdate) {
+      const birth = new Date(participants[0].birthdate);
+      const today = new Date();
+      let age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+      window._participantAge = age;
+    } else {
+      window._participantAge = null;
+    }
+
     const [sRes, cRes, dRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${participantId}&select=*&order=stamped_at.asc`,
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }),
@@ -891,6 +903,7 @@
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/panda-comment`, {
         method: 'POST',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${SUPABASE_KEY}`,
@@ -898,6 +911,7 @@
         body: JSON.stringify({
           count, p3, p5, p8, p10,
           nickname: window._participantNickname || 'お友達',
+          age: window._participantAge || null,
         }),
       });
       if (res.ok) {
