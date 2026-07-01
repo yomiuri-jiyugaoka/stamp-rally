@@ -622,6 +622,7 @@
     }
 
     document.getElementById('userName').textContent = participants[0].nickname;
+    window._participantNickname = participants[0].nickname;
 
     const [sRes, cRes, dRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${participantId}&select=*&order=stamped_at.asc`,
@@ -788,7 +789,7 @@
 
     // ゴールバー更新
     updateGoalBar(stamps.length);
-    updatePandaComment(stamps.length, prize3Done, prize5Done, prize8Done_init, prize10Done_init);
+    updatePandaComment(stamps.length, prize3Done, prize5Done, prize8Done_init, prize10Done_init).catch(() => {});
 
     const courseList = document.getElementById('courseList');
     if (stamps.length > 0) {
@@ -866,40 +867,46 @@
     document.getElementById('addHomeModal').style.display = 'flex';
   }
 
-  function updatePandaComment(count, p3, p5, p8, p10) {
+  async function updatePandaComment(count, p3, p5, p8, p10) {
     const bubble = document.getElementById('pandaSpeechBubble');
     if (!bubble) return;
-    let msg = 'おはよう！🌟';
 
-    if (count === 0) {
-      msg = '今年の夏もがんばろう！';
-    } else if (count >= 10 && p10) {
-      msg = 'チャンピオンだ！すごい！👑';
-    } else if (count >= 10 && !p10) {
-      msg = '10個達成！受付に行こう！👑';
-    } else if (count >= 8 && p8) {
-      // 8個交換済み → 10個目指して
-      msg = 'あと' + (10 - count) + '個で10個だよ！👑';
-    } else if (count >= 8 && !p8) {
-      // 8個達成・未交換
-      msg = '8個達成！受付に行こう！💎';
-    } else if (count >= 5 && p5) {
-      // 5個交換済み → 8個目指して
-      msg = 'あと' + (8 - count) + '個で8個だよ！💎';
-    } else if (count >= 5 && !p5) {
-      // 5個達成・未交換
-      msg = '5個達成！受付に行こう！🏆';
-    } else if (count >= 3 && p3) {
-      // 3個交換済み → 5個目指して
-      msg = 'あと' + (5 - count) + '個で5個だよ！🏆';
-    } else if (count >= 3 && !p3) {
-      // 3個達成・未交換
-      msg = '3個達成！受付に行こう！🎁';
-    } else if (count > 0) {
-      msg = 'あと' + (3 - count) + '個でプレゼント！🎁';
+    // フォールバック用の固定メッセージ
+    const fallback = (() => {
+      if (count === 0) return '今年の夏もがんばるぱんだ！🐼';
+      if (count >= 10 && p10) return 'チャンピオンだぱんだ！🌟';
+      if (count >= 10) return '10個！うけつけにいくぱんだ！';
+      if (count >= 8 && p8) return 'あと' + (10 - count) + '個だぱんだ！⭐';
+      if (count >= 8) return '8個！うけつけにいくぱんだ！';
+      if (count >= 5 && p5) return 'あと' + (8 - count) + '個だぱんだ！⭐';
+      if (count >= 5) return '5個！うけつけにいくぱんだ！';
+      if (count >= 3 && p3) return 'あと' + (5 - count) + '個だぱんだ！⭐';
+      if (count >= 3) return '3個！うけつけにいくぱんだ！';
+      return 'あと' + (3 - count) + '個でプレゼントぱんだ！🎉';
+    })();
+
+    bubble.textContent = fallback;
+
+    // Geminiパンダコメントを非同期で取得して差し替え
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/panda-comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+        },
+        body: JSON.stringify({
+          count, p3, p5, p8, p10,
+          nickname: window._participantNickname || 'お友達',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.comment) bubble.textContent = data.comment;
+      }
+    } catch (e) {
+      // フォールバックのまま表示継続
     }
-
-    bubble.textContent = msg;
   }
 
   function showSaveEffect() {
