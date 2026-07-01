@@ -179,6 +179,17 @@
     <div class="form-grid">
       <input type="text" id="newNickname" placeholder="ニックネーム">
       <input type="text" id="newRealName" placeholder="本名（カタカナ）">
+      <div style="display:flex;gap:6px">
+        <select id="newBirthYear" style="flex:1"><option value="">年</option></select>
+        <select id="newBirthMonth" style="flex:1"><option value="">月</option></select>
+        <select id="newBirthDay" style="flex:1"><option value="">日</option></select>
+      </div>
+      <select id="newGender">
+        <option value="">性別（任意）</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="その他">その他</option>
+      </select>
     </div>
     <button class="btn btn-primary btn-full" onclick="addParticipant()">➕ 追加する</button>
     <div class="success-msg" id="addSuccess">追加しました！</div>
@@ -255,8 +266,27 @@
       loadParticipants();
       loadCourseMap();
       loadReceptionCourses();
+      initBirthSelect();
     } else {
       document.getElementById('loginError').style.display = 'block';
+    }
+  }
+
+  function initBirthSelect() {
+    const yearSel = document.getElementById('newBirthYear');
+    const monthSel = document.getElementById('newBirthMonth');
+    const daySel = document.getElementById('newBirthDay');
+    yearSel.innerHTML = '<option value="">年</option>';
+    for (let y = 2025; y >= 1996; y--) {
+      yearSel.innerHTML += `<option value="${y}">${y}年</option>`;
+    }
+    monthSel.innerHTML = '<option value="">月</option>';
+    for (let m = 1; m <= 12; m++) {
+      monthSel.innerHTML += `<option value="${m}">${m}月</option>`;
+    }
+    daySel.innerHTML = '<option value="">日</option>';
+    for (let d = 1; d <= 31; d++) {
+      daySel.innerHTML += `<option value="${d}">${d}日</option>`;
     }
   }
 
@@ -416,15 +446,24 @@
     const nickname = document.getElementById('newNickname').value.trim();
     const realName = document.getElementById('newRealName').value.trim();
     if (!nickname || !realName) { alert('ニックネームと本名を入力してください'); return; }
+    const year = document.getElementById('newBirthYear').value;
+    const month = document.getElementById('newBirthMonth').value;
+    const day = document.getElementById('newBirthDay').value;
+    const birthdate = (year && month && day) ? year + '-' + month.padStart(2,'0') + '-' + day.padStart(2,'0') : null;
+    const gender = document.getElementById('newGender').value || null;
     const res = await fetch(SUPABASE_URL + '/rest/v1/participants', {
       method: 'POST',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ nickname, real_name: realName })
+      body: JSON.stringify({ nickname, real_name: realName, birthdate, gender })
     });
     if (res.ok) {
       document.getElementById('addSuccess').style.display = 'block';
       document.getElementById('newNickname').value = '';
       document.getElementById('newRealName').value = '';
+      document.getElementById('newBirthYear').value = '';
+      document.getElementById('newBirthMonth').value = '';
+      document.getElementById('newBirthDay').value = '';
+      document.getElementById('newGender').value = '';
       setTimeout(() => document.getElementById('addSuccess').style.display = 'none', 3000);
       loadParticipants();
     } else { alert('追加に失敗しました。ニックネームが重複している可能性があります。'); }
