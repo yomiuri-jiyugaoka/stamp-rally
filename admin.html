@@ -100,6 +100,7 @@
       <button class="btn" id="prize8Btn" onclick="togglePrize(8)" style="background:#FF69B4;color:white">💎 8個交換</button>
       <button class="btn" id="prize10Btn" onclick="togglePrize(10)" style="background:#9B59B6;color:white">👑 10個交換</button>
     </div>
+    <button class="btn" id="cancelPrizeBtn" onclick="cancelLastPrize()" style="margin-top:8px;background:#FFF0F0;color:#CC3333;display:none">↩️ 最後の交換を取り消す</button>
     <button class="btn btn-gray btn-full" style="margin-top:8px" onclick="closeModal()">閉じる</button>
   </div>
 </div>
@@ -426,6 +427,17 @@
     document.getElementById('prize5Btn').style.display = currentStamps.length >= 5 ? 'inline-block' : 'none';
     document.getElementById('prize8Btn').style.display = currentStamps.length >= 8 ? 'inline-block' : 'none';
     document.getElementById('prize10Btn').style.display = currentStamps.length >= 10 ? 'inline-block' : 'none';
+
+    // 取り消しボタン：いずれか交換済みなら表示
+    const anyPrizeDone = prize3Done || prize5Done || prize8Done || prize10Done;
+    const cancelBtn = document.getElementById('cancelPrizeBtn');
+    cancelBtn.style.display = anyPrizeDone ? 'block' : 'none';
+    // 最後に交換したものをボタンに表示
+    if (prize10Done) cancelBtn.textContent = '↩️ 10個交換を取り消す';
+    else if (prize8Done) cancelBtn.textContent = '↩️ 8個交換を取り消す';
+    else if (prize5Done) cancelBtn.textContent = '↩️ 5個交換を取り消す';
+    else if (prize3Done) cancelBtn.textContent = '↩️ 3個交換を取り消す';
+
     document.getElementById('stampModal').className = 'modal open';
   }
 
@@ -446,6 +458,34 @@
       method: 'PATCH',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ [field]: !current })
+    });
+    await openStampModal(currentParticipantId, document.getElementById('modalTitle').textContent.replace(' さんのスタンプ', ''));
+    loadParticipants();
+  }
+
+  async function cancelLastPrize() {
+    if (!currentStamps.length) return;
+    const prize10Done = currentStamps.some(s => s.prize_10);
+    const prize8Done = currentStamps.some(s => s.prize_8);
+    const prize5Done = currentStamps.some(s => s.prize_5);
+    const prize3Done = currentStamps.some(s => s.prize_3);
+
+    // 最後に交換したものを特定
+    let lastNum = null;
+    let lastLabel = '';
+    if (prize10Done) { lastNum = 10; lastLabel = '10個'; }
+    else if (prize8Done) { lastNum = 8; lastLabel = '8個'; }
+    else if (prize5Done) { lastNum = 5; lastLabel = '5個'; }
+    else if (prize3Done) { lastNum = 3; lastLabel = '3個'; }
+
+    if (!lastNum) return;
+    if (!confirm(lastLabel + 'の交換を取り消しますか？\nマイページのスライドボタンが再び表示されます。')) return;
+
+    const field = 'prize_' + lastNum;
+    await fetch(SUPABASE_URL + '/rest/v1/stamps?id=eq.' + currentStamps[0].id, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: false })
     });
     await openStampModal(currentParticipantId, document.getElementById('modalTitle').textContent.replace(' さんのスタンプ', ''));
     loadParticipants();
