@@ -314,6 +314,14 @@
   .firework-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 150; overflow: hidden; }
   .firework { position: absolute; width: 10px; height: 10px; border-radius: 50%; animation: firework 0.8s ease forwards; }
 
+  /* PINモーダル */
+  .pin-key { padding: 14px; font-size: 20px; font-weight: bold; background: #F5F0FF; border: none; border-radius: 12px; color: #5A3A4A; cursor: pointer; font-family: 'Kosugi Maru', sans-serif; transition: transform 0.1s; }
+  .pin-key:active { transform: scale(0.93); background: #E8E0FF; }
+  .pin-key.del { background: #FFE4E4; color: #CC3333; font-size: 14px; }
+  .pin-key.cancel { background: #F0F0F0; color: #888; font-size: 13px; }
+  .pin-dot { width: 16px; height: 16px; border-radius: 50%; background: #EEE; border: 2px solid #DDD; transition: all 0.2s; }
+  .pin-dot.filled { background: #FF9B85; border-color: #FF6B35; }
+
   /* キラキラ */
   .prize-banner.shining { background-size: 200% auto !important; animation: shimmer 1.5s linear infinite !important; }
   .exchange-icon { font-size: 72px; margin-bottom: 16px; }
@@ -347,6 +355,36 @@
     <div class="exchange-title" id="exchangeTitle">交換完了！</div>
     <div class="exchange-sub" id="exchangeSub">受付スタッフにこの画面を見せてね</div>
     <button class="btn btn-primary" onclick="document.getElementById('exchangeModal').className='exchange-modal'">とじる</button>
+  </div>
+</div>
+
+<!-- PIN入力モーダル -->
+<div class="exchange-modal" id="pinModal">
+  <div class="exchange-modal-box">
+    <div style="font-size:48px;margin-bottom:8px">🔑</div>
+    <div style="font-size:18px;font-weight:bold;color:#5A3A4A;margin-bottom:6px">受付スタッフに<br>番号を入力してもらおう！</div>
+    <div style="font-size:13px;color:#AAA;margin-bottom:16px">景品交換には受付スタッフの確認が必要です</div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px">
+      <div class="pin-dot" id="pinDot0"></div>
+      <div class="pin-dot" id="pinDot1"></div>
+      <div class="pin-dot" id="pinDot2"></div>
+      <div class="pin-dot" id="pinDot3"></div>
+    </div>
+    <div id="pinError" style="font-size:12px;color:#CC3333;margin-bottom:8px;display:none">番号が違います。もう一度試してね。</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+      <button class="pin-key" onclick="pinInput('1')">1</button>
+      <button class="pin-key" onclick="pinInput('2')">2</button>
+      <button class="pin-key" onclick="pinInput('3')">3</button>
+      <button class="pin-key" onclick="pinInput('4')">4</button>
+      <button class="pin-key" onclick="pinInput('5')">5</button>
+      <button class="pin-key" onclick="pinInput('6')">6</button>
+      <button class="pin-key" onclick="pinInput('7')">7</button>
+      <button class="pin-key" onclick="pinInput('8')">8</button>
+      <button class="pin-key" onclick="pinInput('9')">9</button>
+      <button class="pin-key del" onclick="pinClear()">消す</button>
+      <button class="pin-key" onclick="pinInput('0')">0</button>
+      <button class="pin-key cancel" onclick="pinCancel()">やめる</button>
+    </div>
   </div>
 </div>
 
@@ -467,7 +505,7 @@
   <div class="card welcome-card">
     <div style="display:flex;align-items:center;justify-content:center;gap:0">
       <div style="position:relative;margin-right:6px">
-        <div id="pandaSpeechBubble" style="background:white;border-radius:16px;padding:5px 10px;font-size:12px;font-weight:bold;color:#5A3A4A;white-space:normal;line-height:1.4;box-shadow:0 3px 10px rgba(0,0,0,0.12);width:170px;min-height:4.2em">
+        <div id="pandaSpeechBubble" style="background:white;border-radius:16px;padding:9px 14px;font-size:12px;font-weight:bold;color:#5A3A4A;white-space:normal;line-height:1.4;box-shadow:0 3px 10px rgba(0,0,0,0.12);max-width:170px">
           おはよう！🌟
         </div>
         <div style="position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:8px solid white"></div>
@@ -625,18 +663,6 @@
     document.getElementById('userName').textContent = participants[0].nickname;
     window._participantNickname = participants[0].nickname;
     window._participantGender = participants[0].gender;
-
-    // 生年月日から年齢を計算
-    if (participants[0].birthdate) {
-      const birth = new Date(participants[0].birthdate);
-      const today = new Date();
-      let age = today.getFullYear() - birth.getFullYear();
-      const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-      window._participantAge = age;
-    } else {
-      window._participantAge = null;
-    }
 
     const [sRes, cRes, dRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/stamps?participant_id=eq.${participantId}&select=*&order=stamped_at.asc`,
@@ -901,19 +927,17 @@
 
     bubble.textContent = ' ';
 
-    // Geminiパンダコメントを非同期で取得して表示
+    // Geminiパンダコメントを非同期で取得して差し替え
     try {
       const res = await fetch('https://gyosai-panda-api.vercel.app/api/panda-comment', {
         method: 'POST',
-        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
         },
         body: JSON.stringify({
           count, p3, p5, p8, p10,
           nickname: window._participantNickname || 'お友達',
-          gender: window._participantGender || null,
-          age: window._participantAge || null,
         }),
       });
       if (res.ok) {
@@ -1323,6 +1347,70 @@
 
   init();
 
+  // PIN認証
+  const STAFF_PIN = '2222';
+  let currentPinInput = '';
+  let pendingExchangeNum = null;
+
+  function showPinModal(num) {
+    pendingExchangeNum = num;
+    currentPinInput = '';
+    updatePinDots();
+    document.getElementById('pinError').style.display = 'none';
+    document.getElementById('pinModal').className = 'exchange-modal open';
+  }
+
+  function pinInput(digit) {
+    if (currentPinInput.length >= 4) return;
+    currentPinInput += digit;
+    updatePinDots();
+    if (currentPinInput.length === 4) {
+      setTimeout(() => checkPin(), 200);
+    }
+  }
+
+  function pinClear() {
+    currentPinInput = currentPinInput.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pinError').style.display = 'none';
+  }
+
+  function pinCancel() {
+    const num = pendingExchangeNum;
+    if (num) {
+      const handle = document.getElementById('slideHandle' + num);
+      const complete = document.getElementById('slideComplete' + num);
+      if (handle) { handle.style.left = '4px'; handle.classList.remove('completed'); }
+      if (complete) complete.style.width = '0';
+    }
+    pendingExchangeNum = null;
+    currentPinInput = '';
+    document.getElementById('pinModal').className = 'exchange-modal';
+  }
+
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('pinDot' + i);
+      if (i < currentPinInput.length) {
+        dot.classList.add('filled');
+      } else {
+        dot.classList.remove('filled');
+      }
+    }
+  }
+
+  function checkPin() {
+    if (currentPinInput === STAFF_PIN) {
+      document.getElementById('pinModal').className = 'exchange-modal';
+      completeExchange(pendingExchangeNum);
+      pendingExchangeNum = null;
+    } else {
+      document.getElementById('pinError').style.display = 'block';
+      currentPinInput = '';
+      updatePinDots();
+    }
+  }
+
   // スライドボタン機能
   function startSlide(e, num) {
     e.preventDefault();
@@ -1347,7 +1435,7 @@
         isDragging = false;
         handle.classList.add('completed');
         complete.style.width = '100%';
-        setTimeout(() => completeExchange(num), 300);
+        setTimeout(() => showPinModal(num), 300);
       }
     }
 
