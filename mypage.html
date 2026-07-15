@@ -927,17 +927,19 @@
 
     bubble.textContent = ' ';
 
-    // Geminiパンダコメントを非同期で取得して差し替え
+    // Geminiパンダコメントを非同期で取得して表示
     try {
       const res = await fetch('https://gyosai-panda-api.vercel.app/api/panda-comment', {
         method: 'POST',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
         },
         body: JSON.stringify({
           count, p3, p5, p8, p10,
           nickname: window._participantNickname || 'お友達',
+          gender: window._participantGender || null,
+          age: window._participantAge || null,
         }),
       });
       if (res.ok) {
@@ -959,7 +961,7 @@
         }
       }
     } catch (e) {
-      // フォールバックのまま表示継続
+      bubble.textContent = fallback;
     }
   }
 
