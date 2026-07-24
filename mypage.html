@@ -515,6 +515,7 @@
     <div class="welcome-name">🌟 <span id="userName"></span> さん</div>
     <div class="welcome-sub">今年の夏もがんばろう！</div>
     <div class="welcome-stars">⭐🌟⭐🌟⭐</div>
+    <button id="goldenClaimBtn" onclick="showPinModal('golden')" style="display:none;margin-top:12px;background:linear-gradient(135deg,#FFD700,#FFF176);border:2px solid #FFB300;border-radius:20px;padding:10px 20px;font-family:Kosugi Maru,sans-serif;font-size:14px;font-weight:bold;color:#7A5500;cursor:pointer;box-shadow:0 0 12px 2px rgba(255,215,0,0.6);animation:goldenPulse 1s ease-in-out infinite alternate">🏅 きんのパンダをうけとる</button>
     <button onclick="openAddHomeModal()" style="margin-top:12px;background:rgba(255,255,255,0.4);border:2px solid rgba(255,255,255,0.6);border-radius:20px;padding:8px 18px;font-family:Kosugi Maru,sans-serif;font-size:13px;color:#5A3A4A;cursor:pointer;font-weight:bold">🏠 ホーム画面に追加する</button>
   </div>
 
@@ -938,8 +939,7 @@
         body: JSON.stringify({
           count, p3, p5, p8, p10,
           nickname: window._participantNickname || 'お友達',
-          gender: window._participantGender || null,
-          age: window._participantAge || null,
+          participantId,
         }),
       });
       if (res.ok) {
@@ -959,10 +959,32 @@
             if (i >= chars.length) clearInterval(timer);
           }, 60);
         }
+        const claimBtn = document.getElementById('goldenClaimBtn');
+        if (claimBtn) claimBtn.style.display = data.isGolden ? 'inline-block' : 'none';
       }
     } catch (e) {
       bubble.textContent = fallback;
     }
+  }
+
+  async function completeGoldenExchange() {
+    try {
+      await fetch('https://gyosai-panda-api.vercel.app/api/panda-golden-exchange', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participantId }),
+      });
+    } catch (e) {}
+    const claimBtn = document.getElementById('goldenClaimBtn');
+    if (claimBtn) claimBtn.style.display = 'none';
+    const bubble = document.getElementById('pandaSpeechBubble');
+    if (bubble) {
+      bubble.style.background = 'white';
+      bubble.style.color = '#5A3A4A';
+      bubble.style.boxShadow = '0 3px 10px rgba(0,0,0,0.12)';
+      bubble.style.animation = 'none';
+    }
+    alert('きんのパンダちゃんの景品と交換したぱんだ！🏅');
   }
 
   function showSaveEffect() {
@@ -1404,7 +1426,11 @@
   function checkPin() {
     if (currentPinInput === STAFF_PIN) {
       document.getElementById('pinModal').className = 'exchange-modal';
-      completeExchange(pendingExchangeNum);
+      if (pendingExchangeNum === 'golden') {
+        completeGoldenExchange();
+      } else {
+        completeExchange(pendingExchangeNum);
+      }
       pendingExchangeNum = null;
     } else {
       document.getElementById('pinError').style.display = 'block';
